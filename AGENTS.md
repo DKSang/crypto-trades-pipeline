@@ -53,3 +53,17 @@ Created when first needed, then listed here: `reference/architecture/` (one file
 - **Fabric MCP** (`fabric-mcp`): Fabric API specs, item definition schemas and best practices; read OneLake files, tables and workspaces. Read-only: make changes with `fab`. Before writing or changing an item definition, check it against `docs_item-definitions`.
 - **Fabric RTI MCP** (`fabric-rti-mcp`): KQL queries against the Eventhouse named by the `KUSTO_SERVICE_URI` environment variable. Not configured until an Eventhouse exists.
 <!-- fabric-engineering-skills:end -->
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues for `DKSang/Polymarket-pipeline`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five default labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context, kept in the brain: `reference/glossary.md` and `reference/decisions/`. See `docs/agents/domain.md`.
