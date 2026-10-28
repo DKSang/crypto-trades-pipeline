@@ -1,0 +1,196 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "name": "Run nb_load_silver",
+        "type": "TridentNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "01cbacee-4f8c-4e63-acaa-d4581d545486",
+          "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+          "parameters": {
+            "bronze_table": {
+              "value": {
+                "value": "@pipeline().parameters.bronze_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "silver_table": {
+              "value": {
+                "value": "@pipeline().parameters.silver_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "quarantine_table": {
+              "value": {
+                "value": "@pipeline().parameters.quarantine_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "watermark_table": {
+              "value": {
+                "value": "@pipeline().parameters.watermark_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "name": "Run nb_load_gold",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "Run nb_load_silver",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "49f34316-c4f2-4e38-8d24-f437b6a131ea",
+          "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+          "parameters": {
+            "silver_table": {
+              "value": {
+                "value": "@pipeline().parameters.silver_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "fact_table": {
+              "value": {
+                "value": "@pipeline().parameters.fact_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "dim_pair_table": {
+              "value": {
+                "value": "@pipeline().parameters.dim_pair_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "dim_date_table": {
+              "value": {
+                "value": "@pipeline().parameters.dim_date_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "watermark_table": {
+              "value": {
+                "value": "@pipeline().parameters.watermark_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "fail_after_write": {
+              "value": {
+                "value": "@pipeline().parameters.fail_gold_after_write",
+                "type": "Expression"
+              },
+              "type": "bool"
+            }
+          }
+        }
+      },
+      {
+        "name": "Run nb_refresh_agg_pair_daily",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "Run nb_load_gold",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "995b6760-e202-464a-a5c9-7141275898a0",
+          "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+          "parameters": {
+            "mlv_source_table": {
+              "value": {
+                "value": "@pipeline().parameters.fact_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "mlv_table": {
+              "value": {
+                "value": "@pipeline().parameters.mlv_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "bronze_table": {
+        "type": "string",
+        "defaultValue": "bronze.trades"
+      },
+      "silver_table": {
+        "type": "string",
+        "defaultValue": "silver.trades"
+      },
+      "quarantine_table": {
+        "type": "string",
+        "defaultValue": "ops.quarantine_trades"
+      },
+      "fact_table": {
+        "type": "string",
+        "defaultValue": "gold.fact_trade"
+      },
+      "dim_pair_table": {
+        "type": "string",
+        "defaultValue": "gold.dim_pair"
+      },
+      "dim_date_table": {
+        "type": "string",
+        "defaultValue": "gold.dim_date"
+      },
+      "watermark_table": {
+        "type": "string",
+        "defaultValue": "ops.etl_watermark"
+      },
+      "mlv_table": {
+        "type": "string",
+        "defaultValue": "gold.agg_pair_daily"
+      },
+      "fail_gold_after_write": {
+        "type": "bool",
+        "defaultValue": false
+      }
+    }
+  }
+}

@@ -56,6 +56,7 @@ When the user explains something durable (a convention, an environment fact, a g
 - `reference/glossary.md`: business terms (Pair, Trade, Taker side, Notional…)
 - `reference/lessons.md`: gotchas and fixes
 - `reference/architecture/trades-pipeline.md`: agreed flow, Gold tables, schedule, spikes, out of scope
+- `reference/architecture/gold-model.md`: grain, keys and double-counting rules of every Gold table
 - `reference/decisions/`: hard-to-reverse choices (0002 watermark, 0003 engine, 0004 hot path, 0006 source and key, 0007 collector)
 
 Created when first needed, then listed here: `reference/architecture/` (one file per pattern), `reference/lessons.md` (gotchas and fixes), `reference/glossary.md` (business terms), `reference/decisions/` (hard-to-reverse choices), `reference/workspaces/` (per-workspace inventories).

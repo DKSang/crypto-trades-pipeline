@@ -11,12 +11,12 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Land raw trades | `es_trades` Lakehouse destination → `lh_crypto.bronze.trades` | commits every ~2 min |
 | Backfill a pair from a start time by REST `since` cursor into the same Bronze table | `nb_backfill_trades` via `pl_backfill_bronze_trades` | manual |
 | Pair metadata: Copy (REST) lands `AssetPairs` in `Files/bronze/asset_pairs/`, then `nb_build_dim_pair` merges tracked pairs into `gold.dim_pair` | `pl_ingest_bronze_asset_pairs` | daily 00:15 UTC |
-| Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check), GX, Gold, MLV refresh, hot vs Gold reconcile | `pl_process_gold` | hourly |
+| Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check) → `nb_load_silver`; Gold (`fact_trade`, `dim_pair`, `dim_date`) → `nb_load_gold`; MLV create and refresh → `nb_refresh_agg_pair_daily`. GX and hot vs Gold reconcile come later | `pl_process_gold` | hourly (Cron, every 60 min, UTC) |
 | Serve | `sm_trades` (Direct Lake), `rpt_trades_overview` | |
 
 ## Testing
 
-Spark logic is tested in Fabric, not locally (decided 2026-10-29, issue #9): a `nb_test_<name>` notebook `%run`s the notebook under test (the test sets `library_only = True` first, and the notebook's main cell skips itself) and runs each case on scratch tables in schema `test` of `lh_crypto`. Pure-Python logic with no Spark (as `nb_build_dim_pair`'s mapping cell) stays unit-tested locally by `python -m unittest discover tests`.
+Spark logic is tested in Fabric, not locally (decided 2026-10-29, issue #9): a `nb_test_<name>` notebook `%run`s the notebook under test (the test sets `library_only = True` first, and the notebook's main cell skips itself) and runs each case on scratch tables in schema `test` of `lh_crypto`. Seam 2 (`nb_test_process_gold`, issue #10) runs the real `pl_process_gold` through the Fabric job API on scratch tables: the pipeline's table names are parameters whose defaults are the real tables. Pure-Python logic with no Spark (as `nb_build_dim_pair`'s mapping cell) stays unit-tested locally by `python -m unittest discover tests`.
 
 ## Tracked pairs
 
@@ -33,6 +33,8 @@ About 350,000 trades a day (~4/s) on that date.
 `silver.trades` (`nb_load_silver`): key (`symbol`, `trade_id`), `trade_ts` and `_load_ts` cast to `TIMESTAMP`, `_bronze_version` = the Bronze commit that carried the first copy. Only tracked pairs. A row breaking a rule goes to `ops.quarantine_trades` with one rule ID, the first that fails: `null_key`, `non_positive_qty`, `non_positive_price` (null, zero, negative, NaN and Infinity all fail), `invalid_side`, `invalid_ord_type`, `invalid_timestamp` (a `timestamp` Silver can't cast). Each run reports missing `trade_id`s per pair (`gaps`); gaps never stop the load.
 
 ## Gold
+
+Grain, keys and the double-counting rules of every table: `reference/architecture/gold-model.md`. `nb_load_gold` reads `silver.trades` by Change Data Feed commit version (watermark row `silver.trades` in `ops.etl_watermark`) and loads with insert-only `MERGE`s. `agg_pair_daily` is created and fully refreshed by `nb_refresh_agg_pair_daily`, not by the pipeline's Refresh Materialized Lake View activity (no service principal support, refreshes the whole lakehouse; [Learn](https://learn.microsoft.com/fabric/data-factory/refresh-materialized-lake-view-activity)).
 
 - `fact_trade`: one trade, key (`symbol`, `trade_id`), with `notional` = qty × price.
 - `dim_pair` (`symbol`, base, quote, status, tracked flag; one row per pair ever tracked, an untracked pair keeps its row with the flag off), `dim_date`.

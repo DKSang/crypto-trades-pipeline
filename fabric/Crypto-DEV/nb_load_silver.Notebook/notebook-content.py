@@ -21,7 +21,12 @@
 # PARAMETERS CELL ********************
 
 # fail_after_write raises after the writes and before the watermark moves, to prove a rerun is safe.
+# The table names are parameters so pl_process_gold can run on scratch tables (seam 2).
 fail_after_write = False
+bronze_table = "bronze.trades"
+silver_table = "silver.trades"
+quarantine_table = "ops.quarantine_trades"
+watermark_table = "ops.etl_watermark"
 
 # METADATA ********************
 
@@ -212,7 +217,7 @@ if not globals().get("library_only", False):
         # An empty list would drop every trade.
         raise ValueError("No tracked pairs in vl_crypto")
 
-    summary = load_increment("bronze.trades", "silver.trades", "ops.quarantine_trades", "ops.etl_watermark",
+    summary = load_increment(bronze_table, silver_table, quarantine_table, watermark_table,
                              tracked_pairs, fail_after_write)
     notebookutils.fs.put(RESULT_PATH, json.dumps(summary, indent=2), True)
     print(summary)

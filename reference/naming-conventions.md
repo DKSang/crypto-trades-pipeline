@@ -21,6 +21,8 @@ Starter set accepted 2026-10-28; edit when the team states a rule.
 | Environment | `env_<scope>` | `env_crypto` |
 | Test notebook (runs on scratch tables in schema `test`) | `nb_test_<notebook under test minus nb_>` | `nb_test_load_silver` |
 
+A test that runs a whole pipeline (seam 2) is named `nb_test_<pipeline minus pl_>`, e.g. `nb_test_process_gold` (used in issue #10, not yet confirmed by the owner). `pl_process_gold` has no source part either, for the same reason.
+
 One lakehouse, `lh_crypto`, with schemas `bronze`, `silver`, `gold`, `ops` (accepted 2026-10-28).
 
 ## Pipeline activities
