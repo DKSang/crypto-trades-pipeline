@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "pl_ingest_bronze_asset_pairs"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "4d62547f-50e2-4338-8a2f-b4e28107c82b"
+  }
+}

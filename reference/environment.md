@@ -23,6 +23,8 @@
 | `nb_setup_lakehouse`, `nb_check_bronze_trades` (Notebooks) | | idempotent setup; read-only Bronze checks, results in `Files/checks/` |
 | `vl_crypto` (Variable library) | `4c6d103a-b8bf-461d-9b61-d73823babf1d` | `tracked_pairs` (String, comma-separated WS v2 names), `whale_threshold_usd` (Integer, 100000 assumed); no value sets, DEV only |
 | `nb_build_dim_pair` (Notebook), `nb_check_dim_pair` | | newest `Files/bronze/asset_pairs/*.json` snapshot → `gold.dim_pair` (MERGE); read-only check, result in `Files/checks/nb_check_dim_pair.json`. Logic unit-tested by `python -m unittest discover tests` |
+| `pl_ingest_bronze_asset_pairs` (Data pipeline) | `8db3d36b-fa68-4e37-a3af-94923d77b1b5` | Copy REST `0/public/AssetPairs` → `Files/bronze/asset_pairs/asset_pairs_<UTC ts>.json`, then `nb_build_dim_pair`; daily 00:15 UTC (schedule is in `.schedules`) |
+| `Kraken REST` (tenant Connection, not in a workspace) | `32dc1617-c9f4-43a7-a694-f896c06e446a` | `RestService`, `https://api.kraken.com`, Anonymous; created 2026-10-28 with the user's explicit OK |
 | `nb_check_kraken_ws`, `nb_check_es_types` (Python notebooks) | | spikes: WS hold test, Eventstream type-conversion probe (`PROBE/*` rows, see `reference/lessons.md`) |
 
 The service principal can see (and may be able to write to) `Polymarket-old-DEV`; only the rule above keeps the agent out of it.

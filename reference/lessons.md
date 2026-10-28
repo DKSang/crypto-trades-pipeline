@@ -40,3 +40,9 @@
 ## Fabric: pair metadata
 
 - **`AssetPairs.wsname` is the legacy name, keys are older still.** OBSERVED 2026-10-28: keys `XXBTZUSD`, `XDGUSD`, `XETHZUSD`; `wsname` `XBT/USD`, `XDG/USD`, `ETH/USD`; `base`/`quote` carry `X`/`Z` prefixes (`XXBT`, `ZUSD`). Derive base and quote from the mapped `wsname`. All 20 tracked pairs are present; statuses seen: `online`, `cancel_only`, `post_only`.
+
+## Fabric: data pipeline Copy (REST)
+
+- **REST → JSON file copies the response as-is, with a BOM.** OBSERVED 2026-10-28 (`pl_ingest_bronze_asset_pairs`): no mapping needed, the file is the compact API response (`{"error":[],"result":{…}}`, ~680 KB) starting with `﻿`; `json.load` with `utf-8` fails ("Unexpected UTF-8 BOM"), use `utf-8-sig`.
+- **A failed Trident notebook activity carries the notebook's exception.** OBSERVED 2026-10-28: `queryactivityruns` returns it in `error.message` (`errorName`, `errorValue`), unlike the notebook job's `failureReason`.
+- **The schedule is part of the exported definition.** OBSERVED 2026-10-28: `fab export` of a pipeline yields a `.schedules` file (`type: Daily`, `times: ["00:15"]`, `localTimeZoneId: UTC`); `fab import` with it leaves exactly one schedule (it replaces the old one). Create the first one with `POST /workspaces/{ws}/items/{id}/jobs/Execute/schedules` (Fabric API `CreateDataPipelineExecuteSchedule`).

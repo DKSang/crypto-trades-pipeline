@@ -69,7 +69,7 @@ snapshots = sorted(f.name for f in notebookutils.fs.ls("Files/bronze/asset_pairs
 if not snapshots:
     raise FileNotFoundError("No AssetPairs snapshot in Files/bronze/asset_pairs")
 snapshot = snapshots[-1]
-with open(f"/lakehouse/default/Files/bronze/asset_pairs/{snapshot}", encoding="utf-8") as f:
+with open(f"/lakehouse/default/Files/bronze/asset_pairs/{snapshot}", encoding="utf-8-sig") as f:  # Copy writes a BOM
     response = json.load(f)
 if response.get("error"):
     raise RuntimeError(f"Kraken returned errors in {snapshot}: {response['error']}")

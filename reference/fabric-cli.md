@@ -32,3 +32,5 @@
 - `fab job run --timeout N` cancels the job when the timeout hits (config `job_cancel_ontimeout`, default true). For long jobs use `fab job start` and poll.
 - Notebook import defaults to `.ipynb`; a `notebook-content.py` folder needs `--format .py`.
 - `fab set "<ws>.Workspace" -q displayName -i <new>` needs the workspace Admin role; as Member/Contributor it fails with `InsufficientPrivileges` (observed 2026-10-28). Item renames (`fab set "<ws>.Workspace/<item>" -q displayName -i <new> -f`) work without Admin.
+- A REST connection is created with `fab mkdir ".connections/<name>.Connection" -P connectionDetails.type=RestService,connectionDetails.creationMethod=RestService.Contents,connectionDetails.parameters.baseUrl=<url>,connectionDetails.parameters.serverCertificateValidation=true,credentialDetails.type=Anonymous,privacyLevel=Public` (OBSERVED 2026-10-28; without `creationMethod` it fails "Invalid creation method"). Connections live in the tenant, not in `Crypto-DEV`: ask before creating one.
+- `fab` tokens expire after about an hour: `[AuthenticationFailed] Failed to get access token` → `sh scripts/fabric-login.sh`.
