@@ -139,7 +139,7 @@ def test_snapshot_reconnect_and_overlapping_runs_leave_each_trade_once():
     load()
     # Next commits: the subscribe snapshot of a new run resends 942 and 943, a reconnect in the
     # same run resends 943 again, and 944 is new.
-    land([trade(k, path="ws") for k in BTC[1:3]])
+    land([trade(k) for k in BTC[1:3]])
     land([trade(BTC[2]), trade(BTC[3]), trade(BTC[3], path="backfill")])
     result = load()
     check_equal(silver_keys(), sorted(BTC), "silver keys")
@@ -158,6 +158,10 @@ def test_each_row_rule_sends_its_rows_to_quarantine_with_a_rule_id():
         ("non_positive_price", ETH[0], {"price": -1.0}),
         ("invalid_side", ETH[1], {"side": "short"}),
         ("invalid_ord_type", BTC[0], {"ord_type": "stop"}),
+        ("non_positive_qty", BTC[1], {"qty": float("nan")}),  # NaN > 0 is true in Spark
+        ("non_positive_price", BTC[2], {"price": float("inf")}),
+        ("invalid_timestamp", BTC[3], {"timestamp": "not a time"}),
+        ("invalid_timestamp", ETH[0], {"timestamp": None}),
     ]
     for rule_id, key, bad in cases:
         reset()
@@ -166,7 +170,7 @@ def test_each_row_rule_sends_its_rows_to_quarantine_with_a_rule_id():
         check_equal([q[0] for q in quarantined()], [rule_id], f"quarantine for {bad}")
         check_equal(result["quarantined"], {rule_id: 1}, f"DQ quarantined for {bad}")
         check_equal(len(silver_keys()), len(REAL) - 1, f"silver rows for {bad}")
-        check((key not in silver_keys()), f"bad row reached silver for {bad}")
+        check(key not in silver_keys(), f"bad row reached silver for {bad}")
 
 
 def test_a_trade_on_an_untracked_pair_is_dropped_not_quarantined():
@@ -212,6 +216,15 @@ def test_a_failure_in_the_middle_leaves_the_watermark_and_the_rerun_reads_the_sa
     check_equal(rerun["to_version"], bronze_version(), "rerun reads to")
     check_equal(silver_keys(), sorted(BTC + ETH[:1]), "silver keys")
     check_equal(read_watermark(WATERMARK, BRONZE), bronze_version(), "watermark after rerun")
+
+
+def test_missing_trade_ids_are_reported_per_pair_and_clear_once_filled():
+    reset()
+    land([trade(BTC[0]), trade(BTC[2]), trade(BTC[3]), trade(ETH[0]), trade(ETH[1])])  # BTC 942 is missing
+    check_equal(load()["gaps"], {"BTC/USD": 1}, "gaps")
+    land([trade(BTC[1], path="backfill")])
+    check_equal(load()["gaps"], {}, "gaps after backfill")
+    check_equal(len(silver_keys()), 6, "gaps are reported, never block the load")
 
 
 def run_tests():

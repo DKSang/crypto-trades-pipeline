@@ -28,6 +28,10 @@ About 350,000 trades a day (~4/s) on that date.
 
 `bronze.trades` keeps the WS v2 field names: `symbol`, `side`, `price`, `qty`, `ord_type`, `trade_id`, `timestamp` (ISO 8601 string), plus `_ingest_path` (`ws` or `backfill`) and `_load_ts` (ISO 8601 string). No casting in Bronze; Silver casts the time columns. Backfill converts REST rows to the same shape.
 
+## Silver
+
+`silver.trades` (`nb_load_silver`): key (`symbol`, `trade_id`), `trade_ts` and `_load_ts` cast to `TIMESTAMP`, `_bronze_version` = the Bronze commit that carried the first copy. Only tracked pairs. A row breaking a rule goes to `ops.quarantine_trades` with one rule ID, the first that fails: `null_key`, `non_positive_qty`, `non_positive_price` (null, zero, negative, NaN and Infinity all fail), `invalid_side`, `invalid_ord_type`, `invalid_timestamp` (a `timestamp` Silver can't cast). Each run reports missing `trade_id`s per pair (`gaps`); gaps never stop the load.
+
 ## Gold
 
 - `fact_trade`: one trade, key (`symbol`, `trade_id`), with `notional` = qty × price.

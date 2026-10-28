@@ -46,13 +46,21 @@ from pyspark.sql.window import Window
 
 RAW_COLUMNS = ["symbol", "side", "price", "qty", "ord_type", "trade_id", "timestamp", "_ingest_path", "_load_ts"]
 
-# First failing rule wins, so a row is quarantined once. A null qty or price fails its positive rule.
+def is_positive_number(column):
+    # Spark says NaN > 0 is true, so NaN and Infinity are ruled out by hand; null is not positive.
+    name = F.col(column)
+    return F.coalesce((name > 0) & ~F.isnan(name) & (name < float("inf")), F.lit(False))
+
+
+# First failing rule wins, so a row is quarantined once. try_to_timestamp gives null, not an error,
+# for a time Silver can't cast.
 ROW_RULES = [
     ("null_key", F.col("symbol").isNull() | F.col("trade_id").isNull()),
-    ("non_positive_qty", ~F.coalesce(F.col("qty") > 0, F.lit(False))),
-    ("non_positive_price", ~F.coalesce(F.col("price") > 0, F.lit(False))),
+    ("non_positive_qty", ~is_positive_number("qty")),
+    ("non_positive_price", ~is_positive_number("price")),
     ("invalid_side", ~F.coalesce(F.col("side").isin("buy", "sell"), F.lit(False))),
     ("invalid_ord_type", ~F.coalesce(F.col("ord_type").isin("limit", "market"), F.lit(False))),
+    ("invalid_timestamp", F.try_to_timestamp(F.col("timestamp")).isNull()),
 ]
 
 
@@ -88,7 +96,10 @@ def bronze_start_version(bronze):
     # Before the first run, start after the last CREATE (OR REPLACE) of Bronze: Change Data Feed
     # can't be read across a schema change (reference/lessons.md).
     history = spark.sql(f"DESCRIBE HISTORY {bronze}")
-    return history.filter(F.col("operation").contains("CREATE")).agg(F.max("version")).first()[0]
+    created = history.filter(F.col("operation").contains("CREATE")).agg(F.max("version")).first()[0]
+    if created is None:
+        raise RuntimeError(f"No CREATE in the history of {bronze}: insert its first watermark by hand")
+    return created
 
 
 def load_increment(bronze, silver, quarantine, watermark, tracked, fail_after_write=False):
@@ -97,8 +108,10 @@ def load_increment(bronze, silver, quarantine, watermark, tracked, fail_after_wr
     if last is None:
         last = bronze_start_version(bronze)
     to_version = spark.sql(f"DESCRIBE HISTORY {bronze} LIMIT 1").first()["version"]  # captured once, before reading
+    # gaps stays empty on a run that loaded nothing: it is measured on Silver after a load.
     result = {"from_version": last + 1, "to_version": to_version, "changes_read": 0, "untracked_dropped": 0,
-              "quarantined": {}, "quarantined_inserted": 0, "duplicates_dropped": 0, "silver_inserted": 0}
+              "quarantined": {}, "quarantined_inserted": 0, "duplicates_dropped": 0, "silver_inserted": 0,
+              "gaps": {}}
     if to_version <= last:
         return result
 
@@ -130,8 +143,8 @@ def load_increment(bronze, silver, quarantine, watermark, tracked, fail_after_wr
         silver_batch = (tagged.where("_bucket = 'valid'")
                         .withColumn("_rn", F.row_number().over(first_seen)).where("_rn = 1")
                         .select("symbol", "trade_id", "side", "price", "qty", "ord_type",
-                                F.to_timestamp("timestamp").alias("trade_ts"), "_ingest_path",
-                                F.to_timestamp("_load_ts").alias("_load_ts"),
+                                F.try_to_timestamp(F.col("timestamp")).alias("trade_ts"), "_ingest_path",
+                                F.try_to_timestamp(F.col("_load_ts")).alias("_load_ts"),
                                 F.col("_commit_version").alias("_bronze_version")))
         silver_batch.createOrReplaceTempView("silver_batch")
         merged = spark.sql(f"""
@@ -155,6 +168,13 @@ def load_increment(bronze, silver, quarantine, watermark, tracked, fail_after_wr
             WHEN NOT MATCHED THEN INSERT *
         """).first()
         result["quarantined_inserted"] = merged["num_inserted_rows"]
+
+        # Missing trade_ids per pair over all of Silver (ADR 0006). A gap between collector runs is
+        # accepted (ADR 0007): it is reported here and filled by backfill, never a reason to stop.
+        gaps = (spark.table(silver).groupBy("symbol")
+                .agg((F.max("trade_id") - F.min("trade_id") + 1 - F.count("*")).alias("missing"))
+                .where("missing > 0").collect())
+        result["gaps"] = {r["symbol"]: r["missing"] for r in gaps}
 
         if fail_after_write:
             raise RuntimeError("forced failure after the writes, before the watermark moves")
@@ -181,6 +201,8 @@ def load_increment(bronze, silver, quarantine, watermark, tracked, fail_after_wr
 # CELL ********************
 
 # nb_test_load_silver sets library_only before it %runs this notebook, to get the functions without a load.
+RESULT_PATH = "Files/checks/nb_load_silver.json"
+
 if not globals().get("library_only", False):
     import json
 
@@ -192,7 +214,7 @@ if not globals().get("library_only", False):
 
     summary = load_increment("bronze.trades", "silver.trades", "ops.quarantine_trades", "ops.etl_watermark",
                              tracked_pairs, fail_after_write)
-    notebookutils.fs.put("Files/checks/nb_load_silver.json", json.dumps(summary, indent=2), True)
+    notebookutils.fs.put(RESULT_PATH, json.dumps(summary, indent=2), True)
     print(summary)
     notebookutils.notebook.exit(json.dumps(summary))
 
