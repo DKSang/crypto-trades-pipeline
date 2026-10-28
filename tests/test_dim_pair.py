@@ -22,7 +22,7 @@ class DimPairMappingTest(unittest.TestCase):
     def setUpClass(cls):
         cls.m = load_mapping_cell()
         cls.result = json.loads(SAMPLE.read_text(encoding="utf-8"))["result"]
-        variables = {v["name"]: v["value"] for v in json.loads(VARIABLES.read_text())["variables"]}
+        variables = {v["name"]: v["value"] for v in json.loads(VARIABLES.read_text(encoding="utf-8"))["variables"]}
         cls.tracked = variables["tracked_pairs"].split(",")
 
     def test_legacy_names_become_ws_v2_names(self):
@@ -53,6 +53,13 @@ class DimPairMappingTest(unittest.TestCase):
 
     def test_tracked_list_tolerates_spaces_and_trailing_comma(self):
         self.assertEqual(self.m["parse_tracked"](" BTC/USD, ETH/USD,"), ["BTC/USD", "ETH/USD"])
+
+    def test_duplicate_tracked_entries_collapse_to_one_row(self):
+        self.assertEqual(self.m["parse_tracked"]("BTC/USD,ETH/USD,BTC/USD"), ["BTC/USD", "ETH/USD"])
+
+    def test_empty_tracked_list_fails_instead_of_untracking_everything(self):
+        with self.assertRaisesRegex(ValueError, "No tracked pairs"):
+            self.m["tracked_rows"](self.result, [])
 
 
 if __name__ == "__main__":

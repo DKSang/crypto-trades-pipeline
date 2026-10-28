@@ -10,7 +10,7 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Hot path: whale trades, 5-minute volume per tracked pair | `eh_trades`, `rtd_trades_live`, Activator | live |
 | Land raw trades | `es_trades` Lakehouse destination → `lh_crypto.bronze.trades` | commits every ~2 min |
 | Backfill a pair from a start time by REST `since` cursor into the same Bronze table | `nb_backfill_trades` via `pl_backfill_bronze_trades` | manual |
-| Pair metadata from REST `AssetPairs` → `dim_pair` | `pl_ingest_bronze_asset_pairs` (Copy, REST) | daily 00:15 UTC |
+| Pair metadata: Copy (REST) lands `AssetPairs` in `Files/bronze/asset_pairs/`, then `nb_build_dim_pair` merges tracked pairs into `gold.dim_pair` | `pl_ingest_bronze_asset_pairs` | daily 00:15 UTC |
 | Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check), GX, Gold, MLV refresh, hot vs Gold reconcile | `pl_process_gold` | hourly |
 | Serve | `sm_trades` (Direct Lake), `rpt_trades_overview` | |
 
@@ -27,7 +27,7 @@ About 350,000 trades a day (~4/s) on that date.
 ## Gold
 
 - `fact_trade`: one trade, key (`symbol`, `trade_id`), with `notional` = qty × price.
-- `dim_pair` (base, quote, tracked flag), `dim_date`.
+- `dim_pair` (`symbol`, base, quote, status, tracked flag; one row per pair ever tracked, an untracked pair keeps its row with the flag off), `dim_date`.
 - `agg_pair_daily` (MLV): pair × UTC day, with open, high, low, close, volume, notional, VWAP, trade count and taker-buy notional.
 - Whale share of notional and taker buy/sell pressure are measures in `sm_trades`, never stored or summed.
 

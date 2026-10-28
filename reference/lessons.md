@@ -35,7 +35,6 @@
 - **`spark.read.option("wholetext", True).text(path)` returned one line.** OBSERVED 2026-10-28 (`nb_build_dim_pair`, pretty-printed JSON in `Files/`): `.first()[0]` was `{`, so `json.loads` failed with "Expecting property name… line 1 column 2". Read a whole small file with `open("/lakehouse/default/Files/<path>")` instead.
 - **A failed notebook run's `failureReason` carries no traceback.** OBSERVED 2026-10-28: only `System_Cancelled_Session_Statements_Failed`. Write the traceback to `Files/checks/` from a try/except (as `nb_check_*` do) to see it.
 - **The SQL analytics endpoint lags new tables.** OBSERVED 2026-10-28: `gold.dim_pair` was `Invalid object name` right after creation; read the table through a notebook or `fab table schema` meanwhile.
-- **`fab` tokens expire mid-session.** OBSERVED 2026-10-28: `[AuthenticationFailed] Failed to get access token` after ~1 h; `sh scripts/fabric-login.sh` fixes it.
 
 ## Fabric: pair metadata
 

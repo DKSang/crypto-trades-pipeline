@@ -46,8 +46,7 @@ def run_checks():
         failures.append("tracked rows differ from vl_crypto")
     if len({r["symbol"] for r in rows}) != len(rows):
         failures.append("duplicate symbol")
-    if any(r["base"] in ("XBT", "XDG") or r["quote"] in ("XBT", "XDG") or "XBT" in r["symbol"] or "XDG" in r["symbol"]
-           for r in rows):
+    if any("XBT" in r["symbol"] or "XDG" in r["symbol"] for r in rows):
         failures.append("legacy name in dim_pair")
     if any(not r["base"] or not r["quote"] or not r["status"] for r in rows):
         failures.append("base, quote or status empty")

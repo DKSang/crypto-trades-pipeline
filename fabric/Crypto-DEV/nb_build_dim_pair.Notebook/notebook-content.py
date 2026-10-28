@@ -32,10 +32,14 @@ def ws_v2_name(wsname):
 
 
 def parse_tracked(tracked_pairs):
-    return [pair.strip() for pair in tracked_pairs.split(",") if pair.strip()]
+    # dict.fromkeys drops repeats (a repeat would make the MERGE match one row twice), keeping order
+    return list(dict.fromkeys(pair.strip() for pair in tracked_pairs.split(",") if pair.strip()))
 
 
 def tracked_rows(asset_pairs, tracked):
+    if not tracked:
+        # An empty list would clear the flag on every row.
+        raise ValueError("No tracked pairs in vl_crypto")
     by_symbol = {ws_v2_name(p["wsname"]): p for p in asset_pairs.values() if p.get("wsname")}
     missing = [symbol for symbol in tracked if symbol not in by_symbol]
     if missing:
