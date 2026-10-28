@@ -14,6 +14,10 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check), GX, Gold, MLV refresh, hot vs Gold reconcile | `pl_process_gold` | hourly |
 | Serve | `sm_trades` (Direct Lake), `rpt_trades_overview` | |
 
+## Testing
+
+Spark logic is tested in Fabric, not locally (decided 2026-10-29, issue #9): a `nb_test_<name>` notebook `%run`s the notebook under test (the test sets `library_only = True` first, and the notebook's main cell skips itself) and runs each case on scratch tables in schema `test` of `lh_crypto`. Pure-Python logic with no Spark (as `nb_build_dim_pair`'s mapping cell) stays unit-tested locally by `python -m unittest discover tests`.
+
 ## Tracked pairs
 
 The 20 USD spot pairs with the largest 24 h notional on Kraken on 2026-10-28, stablecoins and fiat excluded, fixed in `vl_crypto`:

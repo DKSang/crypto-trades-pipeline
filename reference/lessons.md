@@ -36,6 +36,9 @@
 - **A failed notebook run's `failureReason` carries no traceback.** OBSERVED 2026-10-28: only `System_Cancelled_Session_Statements_Failed`. Write the traceback to `Files/checks/` from a try/except (as `nb_check_*` do) to see it.
 - **The SQL analytics endpoint lags new tables.** OBSERVED 2026-10-28: `gold.dim_pair` was `Invalid object name` right after creation; read the table through a notebook or `fab table schema` meanwhile.
 
+- **A `%run` line in a `.py` notebook has no `# MAGIC` prefix.** OBSERVED 2026-10-29: `fab import --format .py` turned `# MAGIC %run nb_x` into the cell `%run nb_x%run nb_x`, so the job failed with "Cannot read notebook nb_x%run nb_x"; a plain `%run nb_x` line is stored and exported as written (only cell magics such as `%%configure` use `# MAGIC`). Find a hidden cell error by calling the notebook with `notebookutils.notebook.run` inside try/except from a throwaway notebook and writing the traceback to `Files/checks/`.
+- **`%run` shares variables both ways.** DOCUMENTED ([Learn](https://learn.microsoft.com/fabric/data-engineering/author-execute-notebook)): all variables of the referenced notebook are available in the caller. A caller can set a flag before the `%run` and the referenced notebook can read it with `globals().get(...)` (`nb_test_load_silver` sets `library_only`).
+
 ## Fabric: pair metadata
 
 - **`AssetPairs.wsname` is the legacy name, keys are older still.** OBSERVED 2026-10-28: keys `XXBTZUSD`, `XDGUSD`, `XETHZUSD`; `wsname` `XBT/USD`, `XDG/USD`, `ETH/USD`; `base`/`quote` carry `X`/`Z` prefixes (`XXBT`, `ZUSD`). Derive base and quote from the mapped `wsname`. All 20 tracked pairs are present; statuses seen: `online`, `cancel_only`, `post_only`.
