@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "nb_check_kraken_ws"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "d72bd51a-a981-44e8-939a-46265a779054"
+  }
+}

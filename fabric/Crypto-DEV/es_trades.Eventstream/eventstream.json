@@ -1,0 +1,38 @@
+{
+  "sources": [
+    {
+      "name": "TradesCollector",
+      "type": "CustomEndpoint",
+      "properties": {}
+    }
+  ],
+  "streams": [
+    {
+      "name": "es_trades-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [{ "name": "TradesCollector" }]
+    }
+  ],
+  "operators": [],
+  "destinations": [
+    {
+      "name": "BronzeTrades",
+      "type": "Lakehouse",
+      "properties": {
+        "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+        "itemId": "039e4fc7-5892-4238-9c2f-a260cb73fc9f",
+        "schema": "bronze",
+        "deltaTable": "trades",
+        "minimumRows": 2000000,
+        "maximumDurationInSeconds": 900,
+        "inputSerialization": {
+          "type": "Json",
+          "properties": { "encoding": "UTF8" }
+        }
+      },
+      "inputNodes": [{ "name": "es_trades-stream" }]
+    }
+  ],
+  "compatibilityLevel": "1.0"
+}

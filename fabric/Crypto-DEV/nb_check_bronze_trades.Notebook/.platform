@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "nb_check_bronze_trades"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "5859c5f6-e042-4c45-81a0-e861a3a3ec46"
+  }
+}

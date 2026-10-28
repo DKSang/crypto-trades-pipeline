@@ -1,7 +1,7 @@
 <!-- fabric-engineering-skills:start -->
 # Fabric brain
 
-This folder is the second brain for the Polymarket pipeline's Microsoft Fabric development. It carries our conventions, projects and rules into every AI session, so nobody has to explain them twice. Read this file at the start of every session. It is the canonical instruction file for any AI tool working in this folder.
+This folder is the second brain for the crypto trades pipeline's Microsoft Fabric development. It carries our conventions, projects and rules into every AI session, so nobody has to explain them twice. Read this file at the start of every session. It is the canonical instruction file for any AI tool working in this folder.
 
 ## Start of session
 
@@ -11,8 +11,8 @@ Before any Fabric work, read the `reference/` files relevant to the task (index 
 
 ## Guardrails
 
-- **Scope.** You may create or modify items only in `Polymarket-DEV`. Every other workspace (including `Polymarket-old-DEV`) is read-only; never modify it, even if asked casually, without explicit confirmation naming the workspace.
-- **No confirmation in DEV.** In `Polymarket-DEV`, run writes (create, import, run, delete) without asking first. After each change, say what you ran and what it changed. `fab` asks its own confirmation that your shell can't answer, so some commands (e.g. `fab import`) need `-f`.
+- **Scope.** You may create or modify items only in `Crypto-DEV`. Every other workspace (including `Polymarket-old-DEV`) is read-only; never modify it, even if asked casually, without explicit confirmation naming the workspace.
+- **No confirmation in DEV.** In `Crypto-DEV`, run writes (create, import, run, delete) without asking first. After each change, say what you ran and what it changed. `fab` asks its own confirmation that your shell can't answer, so some commands (e.g. `fab import`) need `-f`.
 - **Secrets.** Never print, log or write tokens, passwords, client secrets or connection strings. Never read or echo `.env` values. Don't run commands that print access tokens.
 - **Identity.** `fab` and `az` run as the service principal whose credentials are in `.env`. If `fab auth status` shows signed out or a token expired, run `sh scripts/fabric-login.sh`.
 
@@ -53,10 +53,10 @@ When the user explains something durable (a convention, an environment fact, a g
 - `reference/environment.md`: tenant, workspaces, what is in scope
 - `reference/naming-conventions.md`: how items, tables, columns and activities are named
 - `reference/fabric-cli.md`: how to use `fab` in this repo, including sign-in
-- `reference/glossary.md`: business terms (Market, Outcome, Trade, Trader…)
+- `reference/glossary.md`: business terms (Pair, Trade, Taker side, Notional…)
 - `reference/lessons.md`: gotchas and fixes
 - `reference/architecture/trades-pipeline.md`: agreed flow, Gold tables, schedule, spikes, out of scope
-- `reference/decisions/`: hard-to-reverse choices (0001 source and key, 0002 watermark, 0003 engine, 0004 hot path)
+- `reference/decisions/`: hard-to-reverse choices (0002 watermark, 0003 engine, 0004 hot path, 0006 source and key, 0007 collector)
 
 Created when first needed, then listed here: `reference/architecture/` (one file per pattern), `reference/lessons.md` (gotchas and fixes), `reference/glossary.md` (business terms), `reference/decisions/` (hard-to-reverse choices), `reference/workspaces/` (per-workspace inventories).
 
@@ -77,7 +77,7 @@ Created when first needed, then listed here: `reference/architecture/` (one file
 
 ### Issue tracker
 
-Issues live in GitHub Issues for `DKSang/Polymarket-pipeline`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues live in GitHub Issues for `DKSang/crypto-trades-pipeline`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 

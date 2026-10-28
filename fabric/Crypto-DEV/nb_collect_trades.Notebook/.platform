@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "nb_collect_trades"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "f5aa6b39-92c0-4f20-bfc3-1f5304a94e51"
+  }
+}

@@ -7,7 +7,7 @@
 
 ## Paths
 
-- Workspace: `"<Workspace name>.Workspace"`; item: `"<Workspace>.Workspace/<Item>.<Type>"` (e.g. `"Polymarket-DEV.Workspace/lh_bronze.Lakehouse"`).
+- Workspace: `"<Workspace name>.Workspace"`; item: `"<Workspace>.Workspace/<Item>.<Type>"` (e.g. `"Crypto-DEV.Workspace/lh_crypto.Lakehouse"`).
 - Quote every path; names can contain spaces.
 - Lakehouse content: `.../<Lakehouse>.Lakehouse/Files/...` and `.../<Lakehouse>.Lakehouse/Tables/<schema>/<table>`.
 
@@ -31,3 +31,4 @@
 - `fab import` always asks "Are you sure?", which the agent's shell can't answer: it needs `-f`.
 - `fab job run --timeout N` cancels the job when the timeout hits (config `job_cancel_ontimeout`, default true). For long jobs use `fab job start` and poll.
 - Notebook import defaults to `.ipynb`; a `notebook-content.py` folder needs `--format .py`.
+- `fab set "<ws>.Workspace" -q displayName -i <new>` needs the workspace Admin role; as Member/Contributor it fails with `InsufficientPrivileges` (observed 2026-10-28). Item renames (`fab set "<ws>.Workspace/<item>" -q displayName -i <new> -f`) work without Admin.
