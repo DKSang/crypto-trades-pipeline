@@ -29,6 +29,21 @@ If the `build-in-fabric` skill is available, use it for any build. Otherwise:
 3. Verify each item exists and matches the plan (`fab ls`, `fab get`).
 4. Offer an end-to-end test: run it, check the output data, and if it fails, diagnose, fix, and re-run. Report what failed and why.
 
+### Fabric skills
+
+Before touching a Fabric item, load the `fabric-skills` plugin skill that owns it, and follow it alongside `reference/`. Where they disagree, `reference/` wins; say so.
+
+| Work | Skill |
+| --- | --- |
+| Notebooks, PySpark, Spark SQL, Materialized Lake Views, failed Spark runs | `fabric-skills:spark-cli` |
+| Eventstream (HTTP source, destinations) | `fabric-skills:eventstream-cli` |
+| Eventhouse, KQL database, KQL queries, shortcuts | `fabric-skills:eventhouse-cli` |
+| Activator rules | `fabric-skills:activator-cli` |
+| Semantic model, Direct Lake, DAX measures | `fabric-skills:semantic-model-authoring` |
+| Variable library | `fabric-skills:variable-library-cli` |
+| Lakehouse and pipeline layout across layers | `fabric-skills:e2e-medallion-architecture` |
+| SQL analytics endpoint queries | `fabric-skills:sqldw-cli` |
+
 ## Keep the brain current
 
 When the user explains something durable (a convention, an environment fact, a gotcha, a correction), update the right `reference/` file in the same turn and say in one line what you recorded. Corrections matter most: fix the line that misled you. Never record secrets. If the `fabric-brain` skill is available, use it: it has the routing and formats.
