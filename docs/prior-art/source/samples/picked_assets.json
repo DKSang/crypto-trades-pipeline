@@ -1,0 +1,110 @@
+[
+ {
+  "event_id": "333737",
+  "event_title": "Will a Chinese company have a top ___ AI model by December 31?",
+  "market_id": "1820798",
+  "question": "Will a Chinese company have the best AI model by December 31?",
+  "outcomes": [
+   "Yes",
+   "No"
+  ],
+  "asset_ids": [
+   "75208882562061736657939023955710826509085710699626885913084554436160797786348",
+   "96397436209982671453637902269275725071267861171129419695794443407952680636718"
+  ],
+  "condition_id": "0xca52ff40e910f20d6af4ae3b475f6fa00c4a31205d732cfb2c2e1d09dff21932",
+  "gamma_bestBid": 0.06,
+  "gamma_bestAsk": 0.08,
+  "volume_proxy": 104570.44628799999
+ },
+ {
+  "event_id": "192773",
+  "event_title": "Will OpenAI release a social network in 2026?",
+  "market_id": "1294328",
+  "question": "Will OpenAI release a social network in 2026?",
+  "outcomes": [
+   "Yes",
+   "No"
+  ],
+  "asset_ids": [
+   "35162435508550569894885907104732453786428446460311835767844898641437367939974",
+   "39183639490729729447786174907561327518754458647964682163615911835515028800863"
+  ],
+  "condition_id": "0xe97152561097edb4ab240c4658342d32ed8750dc18ed2eabc27ee06ce6ae5c8b",
+  "gamma_bestBid": 0.09,
+  "gamma_bestAsk": 0.1,
+  "volume_proxy": 83070.61587
+ },
+ {
+  "event_id": "830409",
+  "event_title": "SSI public model released by…?",
+  "market_id": "3502550",
+  "question": "SSI public model released by October 31, 2026?",
+  "outcomes": [
+   "Yes",
+   "No"
+  ],
+  "asset_ids": [
+   "2597454256106162638938909925221980549336338565028284046351545119532768296631",
+   "37836607551090309945072284270235960795024499777311018111655884741495870346460"
+  ],
+  "condition_id": "0x3ed45f3a62e0e18eecb74e607fe8258d61cde36426a5d464dc8a38999130094d",
+  "gamma_bestBid": 0.06,
+  "gamma_bestAsk": 0.1,
+  "volume_proxy": 31841.941055000003
+ },
+ {
+  "event_id": "845611",
+  "event_title": "Which company has the best Text-to-Video AI end of October?",
+  "market_id": "3572806",
+  "question": "Will Google have the best Text-to-Video AI at the end of October 2026?",
+  "outcomes": [
+   "Yes",
+   "No"
+  ],
+  "asset_ids": [
+   "78017335192777195930214922093447169253343072348139399621963387028616265406362",
+   "50621757182314530967476116693652429852000514962233912417101586902568921330193"
+  ],
+  "condition_id": "0x96920e5ba3398e3c95db9b10c1b21550e3c25ecdbf44627e00a4a576c0a49b97",
+  "gamma_bestBid": 0.74,
+  "gamma_bestAsk": 0.85,
+  "volume_proxy": 28185.018614
+ },
+ {
+  "event_id": "841230",
+  "event_title": "Which company has the best AI model end of October?",
+  "market_id": "3554659",
+  "question": "Will Google have the best AI model at the end of October 2026?",
+  "outcomes": [
+   "Yes",
+   "No"
+  ],
+  "asset_ids": [
+   "111088620532234518037120406087772586039940496346205331791940213760503764823657",
+   "76810674201886111032129055133251049314607750560651731811226197614606577962057"
+  ],
+  "condition_id": "0x23858cc44dce48e23f754240a0a71595f38f5c66d9a0eaf612eb5a737ad1e66d",
+  "gamma_bestBid": 0.811,
+  "gamma_bestAsk": 0.823,
+  "volume_proxy": 28081.720964999997
+ },
+ {
+  "event_id": "1111228",
+  "event_title": "Next Claude Haiku Model (4.6+): Text Arena Debut?",
+  "market_id": "5167102",
+  "question": "Will the next Claude Haiku model (4.6+) debut at a score of at least 1420 by June 30, 2027?",
+  "outcomes": [
+   "Yes",
+   "No"
+  ],
+  "asset_ids": [
+   "53371899798571839719508672671913998727122205135130316494812930116451401095809",
+   "108035628703448754831896390359661784709207756621575960421408181102170246424568"
+  ],
+  "condition_id": "0xdde540c3ca18f2ae9102c7bd4099d9e9b9a88897610a8b512aa1b6028f5ab993",
+  "gamma_bestBid": 0.8,
+  "gamma_bestAsk": 0.82,
+  "volume_proxy": 27355.784071999995
+ }
+]

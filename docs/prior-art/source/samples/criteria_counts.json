@@ -1,0 +1,242 @@
+{
+ "events": 298,
+ "markets": 3377,
+ "C0 tat ca market long trong event tag AI (closed=false o cap event)": {
+  "markets": 3377,
+  "events": 298
+ },
+ "C1 = C0 + market hop le (active, not closed, enableOrderBook, co clobTokenIds)": {
+  "markets": 2179,
+  "events": 298
+ },
+ "C2 = C1 + event co tag mo hinh (ai-rankings|ai-releases|ai-benchmarks|llm)": {
+  "markets": 1589,
+  "events": 157
+ },
+ "C3 = C1 + ten mo hinh/benchmark trong title/question (regex)": {
+  "markets": 774,
+  "events": 125
+ },
+ "C4 = C2 AND C3 (giao)": {
+  "markets": 710,
+  "events": 105
+ },
+ "C5 = (C2 OR C3) loai tu khoa IPO/market cap/acquire/hardware/CEO/valuation/token": {
+  "markets": 1545,
+  "events": 157
+ },
+ "C2 only (tag mo hinh, khong khop regex ten)": {
+  "markets": 879,
+  "events": 88
+ },
+ "C3 only (khop regex ten, khong co tag mo hinh)": {
+  "markets": 64,
+  "events": 20
+ },
+ "C2 AND co tu khoa loai (edge case IPO/hardware... trong tag mo hinh)": {
+  "markets": 100,
+  "events": 18
+ },
+ "examples_event_title_market_question": {
+  "C2 AND excl": [
+   [
+    "Will Anthropic’s valuation hit __ by December 31?",
+    "Will Anthropic's valuation hit (HIGH) $3.0T by December 31?"
+   ],
+   [
+    "Will OpenAI's valuation hit __ by December 31?",
+    "Will OpenAI's valuation hit (HIGH) $3.0T by December 31?"
+   ],
+   [
+    "Will Perplexity's valuation hit __ by December 31?",
+    "Will Perplexity's valuation hit (HIGH) $50B by December 31?"
+   ],
+   [
+    "Anthropic vs OpenAI - higher valuation on December 31?",
+    "Anthropic vs OpenAI - higher valuation on December 31?"
+   ],
+   [
+    "Anthropic + OpenAI vs Microsoft - higher valuation on December 31?",
+    "Anthropic + OpenAI vs Microsoft - higher valuation on December 31?"
+   ],
+   [
+    "OpenAI vs Meta — higher valuation on December 31?",
+    "OpenAI vs Meta — higher valuation on December 31?"
+   ],
+   [
+    "OpenAI’s valuation end of October 2026?",
+    "Will OpenAI’s valuation be less than $600B at the end of October 2026?"
+   ],
+   [
+    "What will OpenAI's frontier output token price hit in 2026?",
+    "Will OpenAI's frontier output token price be at or above $70 in 2026?"
+   ],
+   [
+    "What will Anthropic's frontier output token price hit in 2026?",
+    "Will Anthropic's frontier output token price be at or above $75 in 2026?"
+   ],
+   [
+    "What will Claude Fable's output token price hit in 2026?",
+    "Will Claude Fable's output price be at or above $70 in 2026?"
+   ],
+   [
+    "What will Claude Sonnet's output token price hit in 2026?",
+    "Will Claude Sonnet's output price be at or above $20 in 2026?"
+   ],
+   [
+    "What will Claude Opus's output token price hit in 2026?",
+    "Will Claude Opus's output price be at or above $50 in 2026?"
+   ]
+  ],
+  "C3 only": [
+   [
+    "Will a dLLM be the top AI model before 2027?",
+    "Will a dLLM be the top AI model before 2027?"
+   ],
+   [
+    "Which company's AI will first hit 1550 on Chatbot Arena in 2026?",
+    "Will OpenAI be the first company to have an AI model hit 1550 on Chatbot Arena in 2026?"
+   ],
+   [
+    "Which companies will have a #1 AI model by December 31?",
+    "Will OpenAI have a #1 AI model by December 31, 2026?"
+   ],
+   [
+    "US Government removes public access to another major AI model in 2026?",
+    "US Government removes public access to another major AI model in 2026?"
+   ],
+   [
+    "US Government removes public access to a major Chinese AI model in 2026?",
+    "US Government removes public access to a major Chinese AI model in 2026?"
+   ],
+   [
+    "US Government removes public access to another Anthropic AI model in 2026?",
+    "US Government removes public access to another Anthropic AI model in 2026?"
+   ],
+   [
+    "Who will be added to Chinese Military Companies list by June 30, 2027?",
+    "Will DeepSeek be added to the Chinese Military Companies list by June 30, 2027?"
+   ],
+   [
+    "US government bans an open source AI model in 2026?",
+    "US government bans an open source AI model in 2026?"
+   ],
+   [
+    "Deepseek IPO by...?",
+    "Will DeepSeek IPO by December 31, 2026?"
+   ],
+   [
+    "ChatGPT Full Outage by...?",
+    "ChatGPT Full Outage by October 31?"
+   ],
+   [
+    "Kimi (Moonshot AI) IPO by...?",
+    "Will Kimi (Moonshot AI) IPO by December 31, 2026?"
+   ],
+   [
+    "Which AI labs commit to third party vetting by October 31?",
+    "DeepSeek matches Anthropic's evaluator commitment by October 31?"
+   ]
+  ],
+  "C2 only": [
+   [
+    "OpenAI announces it has achieved AGI before 2027?",
+    "OpenAI announces it has achieved AGI before 2027?"
+   ],
+   [
+    "AI wins IMO gold medal in 2026?",
+    "AI wins IMO gold medal in 2026?"
+   ],
+   [
+    "Will OpenAI release a social network in 2026?",
+    "Will OpenAI release a social network in 2026?"
+   ],
+   [
+    "Will Anthropic’s valuation hit __ by December 31?",
+    "Will Anthropic's valuation hit (HIGH) $3.0T by December 31?"
+   ],
+   [
+    "Will OpenAI's valuation hit __ by December 31?",
+    "Will OpenAI's valuation hit (HIGH) $3.0T by December 31?"
+   ],
+   [
+    "Will Perplexity's valuation hit __ by December 31?",
+    "Will Perplexity's valuation hit (HIGH) $50B by December 31?"
+   ],
+   [
+    "Anthropic vs OpenAI - higher valuation on December 31?",
+    "Anthropic vs OpenAI - higher valuation on December 31?"
+   ],
+   [
+    "Anthropic + OpenAI vs Microsoft - higher valuation on December 31?",
+    "Anthropic + OpenAI vs Microsoft - higher valuation on December 31?"
+   ],
+   [
+    "OpenAI vs Meta — higher valuation on December 31?",
+    "OpenAI vs Meta — higher valuation on December 31?"
+   ],
+   [
+    "New MAI thinking model released by...?",
+    "Will Microsoft release a new MAI thinking model by December 31, 2026?"
+   ],
+   [
+    "Highest score on Humanity’s Last Exam in 2026?",
+    "Will the highest score achieved on Humanity’s Last Exam in 2026 be 60% or higher?"
+   ],
+   [
+    "Highest Meta score on Humanity’s Last Exam in 2026?",
+    "Will the highest score achieved by a Meta model on Humanity’s Last Exam in 2026 be 55% or higher?"
+   ]
+  ],
+  "C5 sample": [
+   [
+    "OpenAI announces it has achieved AGI before 2027?",
+    "OpenAI announces it has achieved AGI before 2027?"
+   ],
+   [
+    "AI wins IMO gold medal in 2026?",
+    "AI wins IMO gold medal in 2026?"
+   ],
+   [
+    "Will a dLLM be the top AI model before 2027?",
+    "Will a dLLM be the top AI model before 2027?"
+   ],
+   [
+    "Will any AI model reach ___ Overall Arena Score by December 31?",
+    "Will any AI model reach a Chatbot Arena score of at least 1540 by December 31?"
+   ],
+   [
+    "Will OpenAI release a social network in 2026?",
+    "Will OpenAI release a social network in 2026?"
+   ],
+   [
+    "Which company's AI will first hit 1550 on Chatbot Arena in 2026?",
+    "Will OpenAI be the first company to have an AI model hit 1550 on Chatbot Arena in 2026?"
+   ],
+   [
+    "Will a Chinese company have a top ___ AI model by December 31?",
+    "Will a Chinese company have one of the top 3 AI models by December 31?"
+   ],
+   [
+    "Will any AI model reach ___ Math Arena Score by December 31?",
+    "Will any AI model reach 1575 Math Arena Score by December 31, 2026?"
+   ],
+   [
+    "Will any AI model reach ___ Coding Arena Score by December 31?",
+    "Will any AI model reach 1580 Coding Arena Score by December 31, 2026?"
+   ],
+   [
+    "Which companies will have a #1 AI model by December 31?",
+    "Will OpenAI have a #1 AI model by December 31, 2026?"
+   ],
+   [
+    "Next Google Gemini Pro Model: Arena Debut?",
+    "Will the next Google Gemini Pro model added to the Arena Leaderboard debut at a score of at least 1480?"
+   ],
+   [
+    "Next Google Gemini Pro Model released by...?",
+    "Will the next Google Gemini Pro model be released by October 31, 2026?"
+   ]
+  ]
+ }
+}

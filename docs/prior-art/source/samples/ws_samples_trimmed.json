@@ -1,0 +1,268 @@
+{
+ "book": [
+  {
+   "market": "0x96920e5ba3398e3c95db9b10c1b21550e3c25ecdbf44627e00a4a576c0a49b97",
+   "asset_id": "78017335192777195930214922093447169253343072348139399621963387028616265406362",
+   "timestamp": "1792603196650",
+   "hash": "353de2e76fdd6a817388d663dcaa4071deadc944",
+   "bids": [
+    {
+     "price": "0.01",
+     "size": "5"
+    },
+    {
+     "price": "0.05",
+     "size": "5"
+    },
+    {
+     "...": "1 more"
+    },
+    {
+     "price": "0.36",
+     "size": "5"
+    },
+    {
+     "price": "0.74",
+     "size": "134.65"
+    }
+   ],
+   "asks": [
+    {
+     "price": "0.99",
+     "size": "38.89"
+    },
+    {
+     "price": "0.98",
+     "size": "56.85"
+    },
+    {
+     "...": "6 more"
+    },
+    {
+     "price": "0.9",
+     "size": "10"
+    },
+    {
+     "price": "0.85",
+     "size": "177.62"
+    }
+   ],
+   "tick_size": "0.01",
+   "event_type": "book",
+   "last_trade_price": "0.850"
+  },
+  {
+   "market": "0xe02cad0d9171720d7bd87f93919178fbe4e6fb5a8689bc5c98167f333eaa007f",
+   "asset_id": "33329864977204916205914981464392777027580223222227400074915047170985403022869",
+   "timestamp": "1792602842712",
+   "hash": "78238b6b71583aae2f11002cffd8f9a3761e4802",
+   "bids": [
+    {
+     "price": "0.01",
+     "size": "217.44"
+    },
+    {
+     "price": "0.02",
+     "size": "25"
+    },
+    {
+     "...": "10 more"
+    },
+    {
+     "price": "0.2",
+     "size": "40"
+    },
+    {
+     "price": "0.24",
+     "size": "205.44"
+    }
+   ],
+   "asks": [
+    {
+     "price": "0.99",
+     "size": "17.3"
+    },
+    {
+     "price": "0.98",
+     "size": "10"
+    },
+    {
+     "...": "7 more"
+    },
+    {
+     "price": "0.41",
+     "size": "60"
+    },
+    {
+     "price": "0.4",
+     "size": "120.27"
+    }
+   ],
+   "tick_size": "0.01",
+   "event_type": "book",
+   "last_trade_price": "0.280"
+  }
+ ],
+ "price_change": [
+  {
+   "market": "0x23858cc44dce48e23f754240a0a71595f38f5c66d9a0eaf612eb5a737ad1e66d",
+   "price_changes": [
+    {
+     "asset_id": "76810674201886111032129055133251049314607750560651731811226197614606577962057",
+     "price": "0.211",
+     "size": "50",
+     "side": "SELL",
+     "hash": "801ad0f2effbcbfb171750dbc6cc7cc58eeae777",
+     "best_bid": "0.177",
+     "best_ask": "0.189"
+    },
+    {
+     "asset_id": "111088620532234518037120406087772586039940496346205331791940213760503764823657",
+     "price": "0.789",
+     "size": "50",
+     "side": "BUY",
+     "hash": "f541df240483e30023847ffd06fba99c65ea6314",
+     "best_bid": "0.811",
+     "best_ask": "0.823"
+    }
+   ],
+   "timestamp": "1792603200066",
+   "event_type": "price_change"
+  },
+  {
+   "market": "0x23858cc44dce48e23f754240a0a71595f38f5c66d9a0eaf612eb5a737ad1e66d",
+   "price_changes": [
+    {
+     "asset_id": "76810674201886111032129055133251049314607750560651731811226197614606577962057",
+     "price": "0.203",
+     "size": "54",
+     "side": "SELL",
+     "hash": "2523a811b17b617266f2453692c92e670e14f982",
+     "best_bid": "0.177",
+     "best_ask": "0.189"
+    },
+    {
+     "asset_id": "111088620532234518037120406087772586039940496346205331791940213760503764823657",
+     "price": "0.797",
+     "size": "54",
+     "side": "BUY",
+     "hash": "9f9777771ad173c8d77abe16b253bfb2da366814",
+     "best_bid": "0.811",
+     "best_ask": "0.823"
+    }
+   ],
+   "timestamp": "1792603200070",
+   "event_type": "price_change"
+  }
+ ],
+ "best_bid_ask": [
+  {
+   "market": "0x611494bf2b6433b40b485671beff12d0de8cda57bfe625072e251811a145935f",
+   "asset_id": "69243025589281638063458030453913961745334795823499900749366077096152947693037",
+   "best_bid": "0.747",
+   "best_ask": "0.768",
+   "spread": "0.021",
+   "timestamp": "1792603210533",
+   "event_type": "best_bid_ask"
+  },
+  {
+   "market": "0x611494bf2b6433b40b485671beff12d0de8cda57bfe625072e251811a145935f",
+   "asset_id": "34019348780573642175482302837967097108827215133751238521455304466459269567850",
+   "best_bid": "0.232",
+   "best_ask": "0.253",
+   "spread": "0.021",
+   "timestamp": "1792603210533",
+   "event_type": "best_bid_ask"
+  }
+ ],
+ "new_market": [
+  {
+   "id": "6017669",
+   "question": "Ningbo Open: Completed Match: Routliffe/Sutjiadi vs Eikeri/Gleason",
+   "market": "0x95f864bbd3f504a4cb9bcc7b5cc9bf631f716b83fbbca5e4df48e75315b1a1ce",
+   "slug": "wta-doubles-routsut-eikegle-2026-10-22-completed-match",
+   "description": "This market refers to the doubles tennis match between Routliffe/Sutjiadi and Eikeri/Gleason in the Ningbo Open, originally scheduled for October 22, 2026 at 10:00PM ET. This market will resolve to \"Yes\" if all games and sets required to determine a match winner under governing body or event organizer rules are played to completion through normal play. Otherwise, if the match is not completed for any reason, it will resolve to \"No.\" If a forfeit of any kind occurs, including but not limited to a walkover or retirement, this market will resolve \"No.\" If the match is canceled (not played at all), ends in a tie, or a winner has not been determined by November 5, 2026, 11:59 PM ET (14 days after the scheduled start), this market will resolve to \"No.\" The primary resolution source for this market is the official statistics of the event as recognized by the governing body or event organizers. However, if the governing body or event organizers have not published final match statistics within 2 hours after the event's conclusion, a consensus of credible reporting may be used instead.",
+   "assets_ids": [
+    "10271019100093384983975822199723769023439151162985458747571467903037719734005",
+    "69556652496497712959602174489818487045922430986267603281569141311760251799159"
+   ],
+   "outcomes": [
+    "Yes",
+    "No"
+   ],
+   "event_message": {
+    "id": "1230603",
+    "ticker": "wta-doubles-routsut-eikegle-2026-10-22",
+    "slug": "wta-doubles-routsut-eikegle-2026-10-22",
+    "title": "Ningbo Open (Doubles): Routliffe/Sutjiadi vs Eikeri/Gleason",
+    "description": "This market refers to the doubles tennis match between Routliffe/Sutjiadi and Eikeri/Gleason in the Ningbo Open, originally scheduled for October 22, 2026 at 10:00PM ET.\n\nThis market will resolve to 'Routliffe/Sutjiadi' if the team of Routliffe/Sutjiadi advances against Eikeri/Gleason.\n\nThis market will resolve to 'Eikeri/Gleason' if the team of Eikeri/Gleason advances against Routliffe/Sutjiadi.\n\nIf the match is canceled (not played at all), ends in a tie, or a winner has not been determined by November 5, 2026, 11:59 PM ET (14 days after the scheduled start), this market will resolve to 50-50.\n\nIf the match begins but is not completed, and one team advances due to the opponent's retirement, default, or disqualification, this market will resolve to the team who advances.\n\nIf the match ends in a walkover (a team withdraws before the start and the other advances automatically), this market will resolve to 50-50.\n\nThe primary resolution source will be official information from the WTA Tour. A consensus of credible reporting may also be used."
+   },
+   "timestamp": "1792603213046",
+   "event_type": "new_market",
+   "tags": [],
+   "condition_id": "0x95f864bbd3f504a4cb9bcc7b5cc9bf631f716b83fbbca5e4df48e75315b1a1ce",
+   "active": true,
+   "clob_token_ids": [
+    "10271019100093384983975822199723769023439151162985458747571467903037719734005",
+    "69556652496497712959602174489818487045922430986267603281569141311760251799159"
+   ],
+   "sports_market_type": "tennis_completed_match",
+   "line": "",
+   "game_start_time": "2026-10-23 02:00:00+00",
+   "order_price_min_tick_size": "0.01",
+   "group_item_title": "Completed Match",
+   "taker_base_fee": "1000",
+   "fees_enabled": true,
+   "fee_schedule": {
+    "exponent": "1",
+    "rate": "0.05",
+    "taker_only": true,
+    "rebate_rate": "0.15"
+   }
+  },
+  {
+   "id": "6017668",
+   "question": "Ningbo Open (Doubles): Routliffe/Sutjiadi vs Eikeri/Gleason",
+   "market": "0x5c94f3e6a696c1e5a747c904e7ce52e7d3421df730f5a5cc1efbd0f92af7e37e",
+   "slug": "wta-doubles-routsut-eikegle-2026-10-22",
+   "description": "This market refers to the doubles tennis match between Routliffe/Sutjiadi and Eikeri/Gleason in the Ningbo Open, originally scheduled for October 22, 2026 at 10:00PM ET.\n\nThis market will resolve to 'Routliffe/Sutjiadi' if the team of Routliffe/Sutjiadi advances against Eikeri/Gleason.\n\nThis market will resolve to 'Eikeri/Gleason' if the team of Eikeri/Gleason advances against Routliffe/Sutjiadi.\n\nIf the match is canceled (not played at all), ends in a tie, or a winner has not been determined by November 5, 2026, 11:59 PM ET (14 days after the scheduled start), this market will resolve to 50-50.\n\nIf the match begins but is not completed, and one team advances due to the opponent's retirement, default, or disqualification, this market will resolve to the team who advances.\n\nIf the match ends in a walkover (a team withdraws before the start and the other advances automatically), this market will resolve to 50-50.\n\nThe primary resolution source will be official information from the WTA Tour. A consensus of credible reporting may also be used.",
+   "assets_ids": [
+    "28053605219520102732440654152226755018870013324757041042124202965082916780591",
+    "35159026601654355878177796995138477945644289020580492269325471650169721091440"
+   ],
+   "outcomes": [
+    "Routliffe/Sutjiadi",
+    "Eikeri/Gleason"
+   ],
+   "event_message": {
+    "id": "1230603",
+    "ticker": "wta-doubles-routsut-eikegle-2026-10-22",
+    "slug": "wta-doubles-routsut-eikegle-2026-10-22",
+    "title": "Ningbo Open (Doubles): Routliffe/Sutjiadi vs Eikeri/Gleason",
+    "description": "This market refers to the doubles tennis match between Routliffe/Sutjiadi and Eikeri/Gleason in the Ningbo Open, originally scheduled for October 22, 2026 at 10:00PM ET.\n\nThis market will resolve to 'Routliffe/Sutjiadi' if the team of Routliffe/Sutjiadi advances against Eikeri/Gleason.\n\nThis market will resolve to 'Eikeri/Gleason' if the team of Eikeri/Gleason advances against Routliffe/Sutjiadi.\n\nIf the match is canceled (not played at all), ends in a tie, or a winner has not been determined by November 5, 2026, 11:59 PM ET (14 days after the scheduled start), this market will resolve to 50-50.\n\nIf the match begins but is not completed, and one team advances due to the opponent's retirement, default, or disqualification, this market will resolve to the team who advances.\n\nIf the match ends in a walkover (a team withdraws before the start and the other advances automatically), this market will resolve to 50-50.\n\nThe primary resolution source will be official information from the WTA Tour. A consensus of credible reporting may also be used."
+   },
+   "timestamp": "1792603213050",
+   "event_type": "new_market",
+   "tags": [],
+   "condition_id": "0x5c94f3e6a696c1e5a747c904e7ce52e7d3421df730f5a5cc1efbd0f92af7e37e",
+   "active": true,
+   "clob_token_ids": [
+    "28053605219520102732440654152226755018870013324757041042124202965082916780591",
+    "35159026601654355878177796995138477945644289020580492269325471650169721091440"
+   ],
+   "sports_market_type": "moneyline",
+   "line": "",
+   "game_start_time": "2026-10-23 02:00:00+00",
+   "order_price_min_tick_size": "0.01",
+   "group_item_title": "",
+   "taker_base_fee": "1000",
+   "fees_enabled": true,
+   "fee_schedule": {
+    "exponent": "1",
+    "rate": "0.05",
+    "taker_only": true,
+    "rebate_rate": "0.15"
+   }
+  }
+ ]
+}

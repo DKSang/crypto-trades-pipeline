@@ -1,0 +1,67 @@
+{
+ "A: tag ai-rankings": {
+  "events": 74,
+  "valid_markets": 1273,
+  "assets": 2546,
+  "markets_with_bestBid_and_bestAsk_in_gamma": 969,
+  "markets_liquidity_gt0": 1273,
+  "median_liquidity": 650.204
+ },
+ "B: tag ai-releases": {
+  "events": 48,
+  "valid_markets": 167,
+  "assets": 334,
+  "markets_with_bestBid_and_bestAsk_in_gamma": 155,
+  "markets_liquidity_gt0": 165,
+  "median_liquidity": 1345.04865
+ },
+ "C: tag ai-rankings OR ai-releases": {
+  "events": 122,
+  "valid_markets": 1440,
+  "assets": 2880,
+  "markets_with_bestBid_and_bestAsk_in_gamma": 1124,
+  "markets_liquidity_gt0": 1438,
+  "median_liquidity": 661.67842
+ },
+ "D: C + ai-benchmarks": {
+  "events": 149,
+  "valid_markets": 1538,
+  "assets": 3076,
+  "markets_with_bestBid_and_bestAsk_in_gamma": 1222,
+  "markets_liquidity_gt0": 1536,
+  "median_liquidity": 661.67842
+ },
+ "E: C loai event title chua tu khoa leak (valuation/token price/IPO/OpenRouter/...)": {
+  "events": 114,
+  "valid_markets": 1389,
+  "assets": 2778,
+  "markets_with_bestBid_and_bestAsk_in_gamma": 1088,
+  "markets_liquidity_gt0": 1387,
+  "median_liquidity": 658.12416
+ },
+ "F: D loai event title chua tu khoa leak": {
+  "events": 128,
+  "valid_markets": 1435,
+  "assets": 2870,
+  "markets_with_bestBid_and_bestAsk_in_gamma": 1134,
+  "markets_liquidity_gt0": 1433,
+  "median_liquidity": 663.83466
+ },
+ "C_invalid_breakdown": {
+  "total": 2501,
+  "closed": 125,
+  "not_active": 936,
+  "no_orderbook": 0,
+  "acceptingOrders_false": 1050
+ },
+ "E_event_titles_excluded_from_C": [
+  "#1 AI lab by OpenRouter market share week of October 19?",
+  "#2 AI lab by OpenRouter market share week of October 19?",
+  "#3 AI lab by OpenRouter market share week of October 19?",
+  "Claude Fable 5.2+: Output Token Price Debut?",
+  "Claude Opus 5.6+: Output Token Price Debut?",
+  "GPT Astra 6.1+: Output Token Price Debut?",
+  "Muse on Meta glasses by...?",
+  "Will OpenAI release a social network in 2026?"
+ ]
+}

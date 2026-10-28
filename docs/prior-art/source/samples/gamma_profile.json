@@ -1,0 +1,182 @@
+{
+ "events": 298,
+ "markets": 3377,
+ "event_id_ascending_in_fetch_order": true,
+ "dup_event_id": 0,
+ "dup_market_id": 0,
+ "dup_conditionId": 0,
+ "null_conditionId": 0,
+ "asset_ids_total": 6754,
+ "asset_ids_distinct": 6754,
+ "asset_id_len_range": [
+  72,
+  78
+ ],
+ "markets_without_clobTokenIds": 0,
+ "outcomes_count_dist": {
+  "2": 3377
+ },
+ "outcome_labels_top": [
+  [
+   "Yes",
+   3366
+  ],
+  [
+   "No",
+   3366
+  ],
+  [
+   "OpenAI",
+   7
+  ],
+  [
+   "Anthropic",
+   5
+  ],
+  [
+   "SpaceX",
+   1
+  ],
+  [
+   "Up",
+   1
+  ]
+ ],
+ "market_null_rate": {
+  "conditionId": 0.0,
+  "clobTokenIds": 0.0,
+  "outcomes": 0.0,
+  "outcomePrices": 0.017,
+  "bestBid": 0.143,
+  "bestAsk": 0.0,
+  "lastTradePrice": 0.017,
+  "endDate": 0.002,
+  "updatedAt": 0.0,
+  "acceptingOrders": 0.0,
+  "volumeNum": 0.004,
+  "liquidityNum": 0.054,
+  "spread": 0.0,
+  "closedTime": 0.939
+ },
+ "market_types": {
+  "outcomes": {
+   "str": 3377
+  },
+  "outcomePrices": {
+   "str": 3321,
+   "NoneType": 56
+  },
+  "clobTokenIds": {
+   "str": 3377
+  },
+  "volume": {
+   "str": 3362,
+   "NoneType": 15
+  },
+  "volumeNum": {
+   "float": 2353,
+   "int": 1009,
+   "NoneType": 15
+  },
+  "bestBid": {
+   "NoneType": 482,
+   "float": 1912,
+   "int": 983
+  },
+  "lastTradePrice": {
+   "float": 2333,
+   "int": 985,
+   "NoneType": 59
+  },
+  "liquidity": {
+   "str": 3194,
+   "NoneType": 183
+  },
+  "liquidityNum": {
+   "int": 1006,
+   "NoneType": 183,
+   "float": 2188
+  },
+  "orderPriceMinTickSize": {
+   "float": 3377
+  },
+  "orderMinSize": {
+   "int": 3377
+  }
+ },
+ "timestamp_formats": {
+  "createdAt": {
+   "9999-99-99T99:99:99.999999Z": 3037,
+   "9999-99-99T99:99:99.99999Z": 306,
+   "9999-99-99T99:99:99.9999Z": 30
+  },
+  "updatedAt": {
+   "9999-99-99T99:99:99.999999Z": 3144,
+   "9999-99-99T99:99:99.99999Z": 221,
+   "9999-99-99T99:99:99.9999Z": 12
+  },
+  "endDate": {
+   "9999-99-99T99:99:99Z": 3369,
+   "<class 'NoneType'>": 8
+  },
+  "endDateIso": {
+   "9999-99-99": 3369,
+   "<class 'NoneType'>": 8
+  },
+  "startDate": {
+   "9999-99-99T99:99:99Z": 1919,
+   "<class 'NoneType'>": 925,
+   "9999-99-99T99:99:99.999999Z": 386
+  }
+ },
+ "event_timestamp_formats": {
+  "createdAt": {
+   "9999-99-99T99:99:99.999999Z": 266,
+   "9999-99-99T99:99:99.99999Z": 27,
+   "9999-99-99T99:99:99.9999Z": 5
+  },
+  "updatedAt": {
+   "9999-99-99T99:99:99.999999Z": 292,
+   "9999-99-99T99:99:99.99999Z": 6
+  },
+  "endDate": {
+   "9999-99-99T99:99:99Z": 298
+  }
+ },
+ "market_updatedAt_range": [
+  "2026-04-28T11:04:14.509635Z",
+  "2026-10-21T17:09:32.483233Z"
+ ],
+ "closed_nested_in_closed_false_events": 206,
+ "events_with_any_closed_nested": 56,
+ "active_false_nested": 992,
+ "negRisk_events": 115,
+ "max_markets_per_event": 35,
+ "outcomePrices_range": [
+  0.0,
+  1.0
+ ],
+ "tickSize_dist": {
+  "0.001": 1760,
+  "0.01": 1617
+ },
+ "orderMinSize_dist": {
+  "5": 3377
+ },
+ "identity_like_fields_market": [
+  "makerBaseFee",
+  "marketMakerAddress",
+  "resolvedBy",
+  "submitted_by"
+ ],
+ "marketMakerAddress_nonempty": 0,
+ "resolvedBy_nonempty": 3377,
+ "submitted_by_nonempty": 1564,
+ "eth_address_pattern_in_metadata": 5780,
+ "eth_addr_fields": [
+  "resolvedBy",
+  "submitted_by"
+ ],
+ "event_identity_like_fields": [],
+ "avg_bytes_per_event": 56946
+}

@@ -1,0 +1,54 @@
+{
+ "url": "wss://ws-subscriptions-clob.polymarket.com/ws/market",
+ "assets_subscribed": 18,
+ "segments": [
+  {
+   "segment": 0,
+   "planned_sec": 120,
+   "start_utc": "2026-10-21T17:19:58.826+00:00",
+   "msgs": 743,
+   "text_frames": [
+    {
+     "rx": "2026-10-21T17:20:00.490+00:00",
+     "text": "PONG"
+    },
+    {
+     "rx": "2026-10-21T17:20:10.650+00:00",
+     "text": "PONG"
+    },
+    {
+     "rx": "2026-10-21T17:20:20.786+00:00",
+     "text": "PONG"
+    },
+    {
+     "rx": "2026-10-21T17:20:31.501+00:00",
+     "text": "PONG"
+    },
+    {
+     "rx": "2026-10-21T17:20:41.525+00:00",
+     "text": "PONG"
+    }
+   ],
+   "errors": [],
+   "connected_utc": "2026-10-21T17:20:00.067+00:00",
+   "pings_sent": 12,
+   "end_utc": "2026-10-21T17:22:00.787+00:00"
+  },
+  {
+   "segment": 1,
+   "planned_sec": 5,
+   "start_utc": "2026-10-21T17:22:02.800+00:00",
+   "msgs": 16,
+   "text_frames": [
+    {
+     "rx": "2026-10-21T17:22:04.774+00:00",
+     "text": "PONG"
+    }
+   ],
+   "errors": [],
+   "connected_utc": "2026-10-21T17:22:04.223+00:00",
+   "pings_sent": 1,
+   "end_utc": "2026-10-21T17:22:09.678+00:00"
+  }
+ ]
+}
