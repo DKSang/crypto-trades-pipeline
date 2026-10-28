@@ -15,6 +15,12 @@ Starter set accepted 2026-10-28; edit when the team states a rule.
 | Semantic model | `sm_<subject>` | `sm_markets` |
 | Report | `rpt_<subject>` | `rpt_markets_overview` |
 | Variable library | `vl_<scope>` | `vl_polymarket` |
+| Eventstream | `es_<subject>` | `es_trades` |
+| Eventhouse / KQL database | `eh_<subject>` | `eh_trades` |
+| Real-Time dashboard | `rtd_<subject>_<purpose>` | `rtd_trades_live` |
+| Environment | `env_<scope>` | `env_polymarket` |
+
+One lakehouse, `lh_polymarket`, with schemas `bronze`, `silver`, `gold`, `ops` (accepted 2026-10-28).
 
 ## Pipeline activities
 
