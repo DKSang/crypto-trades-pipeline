@@ -29,3 +29,14 @@
 - **Subscribe snapshot.** DOCUMENTED (same page): `snapshot: true` sends the last 50 trades per pair, `type: snapshot`; they can predate a REST window, so dedupe on (`symbol`, `trade_id`).
 - **Status message lists maintenance.** OBSERVED 2026-10-28: the first `status` message carries `upcoming_maintenance` (spot REST and WS down ~15 min); expect a reconnect then.
 - **A Fabric Python notebook holds the WS.** OBSERVED 2026-10-28 (`nb_check_kraken_ws`, 20 pairs, 6 min): one connection, no errors, longest silence 1.2 s (heartbeats), 2,947 trades, no `trade_id` jump on any pair, snapshot of 50 per pair. `websocket-client` is not preinstalled; the notebook installs it from code. Longer runs not tested yet.
+
+## Fabric: notebooks
+
+- **`spark.read.option("wholetext", True).text(path)` returned one line.** OBSERVED 2026-10-28 (`nb_build_dim_pair`, pretty-printed JSON in `Files/`): `.first()[0]` was `{`, so `json.loads` failed with "Expecting property name… line 1 column 2". Read a whole small file with `open("/lakehouse/default/Files/<path>")` instead.
+- **A failed notebook run's `failureReason` carries no traceback.** OBSERVED 2026-10-28: only `System_Cancelled_Session_Statements_Failed`. Write the traceback to `Files/checks/` from a try/except (as `nb_check_*` do) to see it.
+- **The SQL analytics endpoint lags new tables.** OBSERVED 2026-10-28: `gold.dim_pair` was `Invalid object name` right after creation; read the table through a notebook or `fab table schema` meanwhile.
+- **`fab` tokens expire mid-session.** OBSERVED 2026-10-28: `[AuthenticationFailed] Failed to get access token` after ~1 h; `sh scripts/fabric-login.sh` fixes it.
+
+## Fabric: pair metadata
+
+- **`AssetPairs.wsname` is the legacy name, keys are older still.** OBSERVED 2026-10-28: keys `XXBTZUSD`, `XDGUSD`, `XETHZUSD`; `wsname` `XBT/USD`, `XDG/USD`, `ETH/USD`; `base`/`quote` carry `X`/`Z` prefixes (`XXBT`, `ZUSD`). Derive base and quote from the mapped `wsname`. All 20 tracked pairs are present; statuses seen: `online`, `cancel_only`, `post_only`.

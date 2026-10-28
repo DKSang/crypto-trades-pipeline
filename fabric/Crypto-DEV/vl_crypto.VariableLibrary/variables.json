@@ -1,0 +1,17 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/variableLibrary/definition/variables/1.0.0/schema.json",
+  "variables": [
+    {
+      "name": "tracked_pairs",
+      "type": "String",
+      "value": "BTC/USD,ETH/USD,XRP/USD,ZEC/USD,NEAR/USD,SOL/USD,HYPE/USD,SUI/USD,XMR/USD,QNT/USD,PEPE/USD,TAO/USD,ENA/USD,XLM/USD,LTC/USD,LINK/USD,ADA/USD,DASH/USD,DOT/USD,DOGE/USD",
+      "note": "Tracked pairs, WS v2 names, comma-separated"
+    },
+    {
+      "name": "whale_threshold_usd",
+      "type": "Integer",
+      "value": 100000,
+      "note": "A trade with notional at or above this is a whale trade"
+    }
+  ]
+}
