@@ -26,7 +26,7 @@ About 350,000 trades a day (~4/s) on that date.
 
 ## Bronze
 
-`bronze.trades` keeps the WS v2 field names: `symbol`, `side`, `price`, `qty`, `ord_type`, `trade_id`, `timestamp` (ISO 8601 string), plus `_ingest_path` (`ws` or `backfill`) and `_load_ts` (ISO 8601 string). No casting in Bronze; Silver casts the time columns. Backfill converts REST rows to the same shape.
+`bronze.trades` keeps the WS v2 field names: `symbol`, `side`, `price`, `qty`, `ord_type`, `trade_id`, `timestamp` (ISO 8601 string), plus `_ingest_path` (`ws` or `backfill`) and `_load_ts` (ISO 8601 string). No casting in Bronze; Silver casts the time columns. Backfill converts REST rows to the same shape; it only appends, and a re-run adds duplicate Bronze rows that Silver drops. It refuses a symbol that is not a tracked pair, since Silver would drop all of it.
 
 ## Silver
 

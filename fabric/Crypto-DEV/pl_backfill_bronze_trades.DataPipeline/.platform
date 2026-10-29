@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "pl_backfill_bronze_trades"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "f20e5a99-6d33-49d6-bcc6-9fbee6ae3e11"
+  }
+}

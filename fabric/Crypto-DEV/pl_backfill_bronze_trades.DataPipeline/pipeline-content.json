@@ -1,0 +1,70 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "name": "Run nb_backfill_trades",
+        "type": "TridentNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "2dee9f6a-6b4a-49d3-8aa3-37b258857c0e",
+          "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+          "parameters": {
+            "symbol": {
+              "value": {
+                "value": "@pipeline().parameters.symbol",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "start": {
+              "value": {
+                "value": "@pipeline().parameters.start",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "end": {
+              "value": {
+                "value": "@pipeline().parameters.end",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "bronze_table": {
+              "value": {
+                "value": "@pipeline().parameters.bronze_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "symbol": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "start": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "end": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "bronze_table": {
+        "type": "string",
+        "defaultValue": "bronze.trades"
+      }
+    }
+  }
+}
