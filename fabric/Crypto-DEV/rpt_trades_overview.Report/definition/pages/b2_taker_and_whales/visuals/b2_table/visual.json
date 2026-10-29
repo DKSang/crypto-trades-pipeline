@@ -3,9 +3,9 @@
   "name": "b2_table",
   "position": {
     "x": 340,
-    "y": 390,
+    "y": 640,
     "z": 1000,
-    "height": 310,
+    "height": 340,
     "width": 920,
     "tabOrder": 1000
   },
