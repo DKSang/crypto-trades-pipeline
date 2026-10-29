@@ -3,9 +3,9 @@
   "name": "b3_asof",
   "position": {
     "x": 340,
-    "y": 10,
+    "y": 5,
     "z": 1000,
-    "height": 50,
+    "height": 70,
     "width": 280,
     "tabOrder": 1000
   },
@@ -33,6 +33,34 @@
       }
     },
     "drillFilterOtherVisuals": true,
+    "objects": {
+      "labels": [
+        {
+          "properties": {
+            "fontSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "18D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {

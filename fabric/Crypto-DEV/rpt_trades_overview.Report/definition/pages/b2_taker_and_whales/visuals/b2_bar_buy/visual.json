@@ -3,9 +3,9 @@
   "name": "b2_bar_buy",
   "position": {
     "x": 340,
-    "y": 70,
+    "y": 85,
     "z": 1000,
-    "height": 300,
+    "height": 290,
     "width": 460,
     "tabOrder": 1000
   },

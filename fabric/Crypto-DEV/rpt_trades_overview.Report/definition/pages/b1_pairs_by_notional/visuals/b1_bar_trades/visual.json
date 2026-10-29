@@ -3,9 +3,9 @@
   "name": "b1_bar_trades",
   "position": {
     "x": 820,
-    "y": 70,
+    "y": 85,
     "z": 1000,
-    "height": 300,
+    "height": 290,
     "width": 440,
     "tabOrder": 1000
   },

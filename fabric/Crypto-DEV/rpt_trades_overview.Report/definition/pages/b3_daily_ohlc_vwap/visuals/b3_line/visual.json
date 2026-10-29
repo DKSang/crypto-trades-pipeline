@@ -3,9 +3,9 @@
   "name": "b3_line",
   "position": {
     "x": 340,
-    "y": 70,
+    "y": 85,
     "z": 1000,
-    "height": 300,
+    "height": 290,
     "width": 920,
     "tabOrder": 1000
   },
@@ -102,6 +102,21 @@
       }
     },
     "drillFilterOtherVisuals": true,
+    "objects": {
+      "categoryAxis": [
+        {
+          "properties": {
+            "axisType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Categorical'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "visualContainerObjects": {
       "title": [
         {
