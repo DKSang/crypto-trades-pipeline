@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Reflex",
+    "displayName": "act_whale_trades"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "c65d8943-1cdd-4779-aab3-14e74d143cb9"
+  }
+}

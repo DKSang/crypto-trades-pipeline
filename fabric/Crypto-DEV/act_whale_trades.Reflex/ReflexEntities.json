@@ -1,0 +1,87 @@
+[
+  {
+    "uniqueIdentifier": "5ebba1d2-da6e-4358-ae04-bb4991428ad0",
+    "type": "container-v1",
+    "payload": {
+      "name": "Whale trades",
+      "type": "kqlQueries"
+    }
+  },
+  {
+    "uniqueIdentifier": "7d4645d5-a6d5-4dfc-96c1-70e38f2bf820",
+    "type": "kqlSource-v1",
+    "payload": {
+      "name": "Tracked whale trades",
+      "runSettings": {
+        "executionIntervalInSeconds": 60
+      },
+      "query": {
+        "queryString": "declare query_parameters(startTime:datetime, endTime:datetime);\ntracked_whale_trades()\n| where timestamp between (startTime .. endTime)\n| project timestamp, symbol, side, qty, price, notional, ord_type, trade_id"
+      },
+      "eventhouseItem": {
+        "itemId": "502ae692-ef4a-4b0f-be9f-f66546414d25",
+        "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+        "itemType": "KustoDatabase"
+      },
+      "queryParameters": [
+        {
+          "name": "startTime",
+          "type": "DURATION_START",
+          "value": "2026-10-29T07:17:31Z"
+        },
+        {
+          "name": "endTime",
+          "type": "DURATION_END",
+          "value": "2099-01-01T00:00:00Z"
+        }
+      ],
+      "eventTimeSettings": {
+        "timeFieldName": "timestamp",
+        "ingestionDelayInSeconds": 30,
+        "timeZone": "UTC"
+      },
+      "metadata": {
+        "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+        "measureName": "",
+        "querySetId": "",
+        "queryId": ""
+      },
+      "parentContainer": {
+        "targetUniqueIdentifier": "5ebba1d2-da6e-4358-ae04-bb4991428ad0"
+      }
+    }
+  },
+  {
+    "uniqueIdentifier": "3223ab63-944d-42d2-8660-e6d749a5dfc4",
+    "type": "timeSeriesView-v1",
+    "payload": {
+      "name": "Whale trade",
+      "parentContainer": {
+        "targetUniqueIdentifier": "5ebba1d2-da6e-4358-ae04-bb4991428ad0"
+      },
+      "definition": {
+        "type": "Event",
+        "instance": "{\"templateId\":\"SourceEvent\",\"templateVersion\":\"1.2.4\",\"steps\":[{\"name\":\"SourceEventStep\",\"id\":\"42c65759-fc38-44b1-aeb3-2fa5eaa51db4\",\"rows\":[{\"name\":\"SourceSelector\",\"kind\":\"SourceReference\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"7d4645d5-a6d5-4dfc-96c1-70e38f2bf820\"}]}]}]}"
+      }
+    }
+  },
+  {
+    "uniqueIdentifier": "507d248e-6bed-4832-831d-31fa7e73a65d",
+    "type": "timeSeriesView-v1",
+    "payload": {
+      "name": "Whale trade on a tracked pair",
+      "description": "Created by: skills-for-fabric",
+      "parentContainer": {
+        "targetUniqueIdentifier": "5ebba1d2-da6e-4358-ae04-bb4991428ad0"
+      },
+      "definition": {
+        "type": "Rule",
+        "instance": "{\"templateId\":\"EventTrigger\",\"templateVersion\":\"1.2.4\",\"steps\":[{\"name\":\"FieldsDefaultsStep\",\"id\":\"4cf64b4d-ead1-48da-9e03-b1977cb4173a\",\"rows\":[{\"name\":\"EventSelector\",\"kind\":\"Event\",\"arguments\":[{\"name\":\"event\",\"kind\":\"EventReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"entityId\",\"type\":\"string\",\"value\":\"3223ab63-944d-42d2-8660-e6d749a5dfc4\"}]}]}]},{\"name\":\"EventDetectStep\",\"id\":\"8e0a2f06-40ad-4155-ab4c-f4b3734773a9\",\"rows\":[{\"name\":\"OnEveryValue\",\"kind\":\"OnEveryValue\",\"arguments\":[]}]},{\"name\":\"ActStep\",\"id\":\"c4918de3-25b0-4756-8123-8ff8436a8c64\",\"rows\":[{\"name\":\"EmailBinding\",\"kind\":\"EmailMessage\",\"arguments\":[{\"name\":\"messageLocale\",\"type\":\"string\",\"value\":\"en-us\"},{\"name\":\"sentTo\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"luonggiacat604@gmail.com\"}]},{\"name\":\"copyTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"bCCTo\",\"type\":\"array\",\"values\":[]},{\"name\":\"subject\",\"type\":\"array\",\"values\":[{\"type\":\"string\",\"value\":\"Whale trade alert\"}]},{\"name\":\"headline\",\"type\":\"array\",\"values\":[{\"name\":\"string\",\"type\":\"string\",\"value\":\"Whale trade on \"},{\"kind\":\"EventFieldReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"symbol\"}]},{\"name\":\"string\",\"type\":\"string\",\"value\":\", taker \"},{\"kind\":\"EventFieldReference\",\"type\":\"complex\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"side\"}]}]},{\"name\":\"optionalMessage\",\"type\":\"array\",\"values\":[{\"name\":\"string\",\"type\":\"string\",\"value\":\"A trade with notional at or above the whale threshold on a tracked pair.\"}]},{\"name\":\"additionalInformation\",\"type\":\"array\",\"values\":[{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Pair\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"symbol\"}]}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Taker side\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"side\"}]}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Qty\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"qty\"}]}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Price (USD)\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"price\"}]}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Notional (USD)\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"notional\"}]}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Order type\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"ord_type\"}]}]},{\"kind\":\"NameReferencePair\",\"type\":\"complex\",\"arguments\":[{\"name\":\"name\",\"type\":\"string\",\"value\":\"Time (UTC)\"},{\"name\":\"reference\",\"kind\":\"EventFieldReference\",\"type\":\"complexReference\",\"arguments\":[{\"name\":\"fieldName\",\"type\":\"string\",\"value\":\"timestamp\"}]}]}]}]}]}]}",
+        "settings": {
+          "shouldRun": true,
+          "shouldApplyRuleOnUpdate": false
+        }
+      }
+    }
+  }
+]

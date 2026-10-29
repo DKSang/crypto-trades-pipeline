@@ -65,6 +65,7 @@ Created when first needed, then listed here: `reference/architecture/` (one file
 
 - `data/`: sample files for development. Never production or personal data.
 - `scripts/fabric-login.sh`: signs `fab` and `az` in as the service principal from `.env` without printing secrets.
+- `scripts/kql-run.py`: runs KQL commands (`mgmt`, one per blank-line block) or a query on a KQL database as the `az` identity; fills `{{name}}` from `vl_crypto`.
 
 ## Tools
 

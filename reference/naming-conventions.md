@@ -18,6 +18,7 @@ Starter set accepted 2026-10-28; edit when the team states a rule.
 | Eventstream | `es_<subject>` | `es_trades` |
 | Eventhouse / KQL database | `eh_<subject>` | `eh_trades` |
 | Real-Time dashboard | `rtd_<subject>_<purpose>` | `rtd_trades_live` |
+| Activator | `act_<subject>` | `act_whale_trades` |
 | Environment | `env_<scope>` | `env_crypto` |
 | Test notebook (runs on scratch tables in schema `test`) | `nb_test_<notebook under test minus nb_>` | `nb_test_load_silver` |
 

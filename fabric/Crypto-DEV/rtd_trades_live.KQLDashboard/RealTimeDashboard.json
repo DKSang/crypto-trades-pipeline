@@ -1,0 +1,135 @@
+{
+  "autoRefresh": {
+    "enabled": true,
+    "defaultInterval": "30s",
+    "minInterval": "30s"
+  },
+  "baseQueries": [],
+  "dataSources": [
+    {
+      "id": "a32f5367-dcf0-440f-a450-e2f92db6c905",
+      "name": "eh_trades",
+      "scopeId": "KustoDatabaseResource",
+      "clusterUri": "https://trd-saxy8s92c83upbpwga.z2.kusto.fabric.microsoft.com",
+      "database": "502ae692-ef4a-4b0f-be9f-f66546414d25",
+      "kind": "kusto-trident",
+      "workspace": "c8d6538e-e60c-467b-8440-dec5dae4d897"
+    }
+  ],
+  "pages": [
+    {
+      "name": "Live trades",
+      "id": "e157eb82-aa7c-47dc-aa40-ef29add5f1da"
+    }
+  ],
+  "parameters": [
+    {
+      "kind": "duration",
+      "id": "be5e4384-014b-440b-8760-575af5760a72",
+      "displayName": "Time range",
+      "description": "",
+      "beginVariableName": "_startTime",
+      "endVariableName": "_endTime",
+      "defaultValue": {
+        "kind": "dynamic",
+        "count": 3,
+        "unit": "hours"
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
+    }
+  ],
+  "queries": [
+    {
+      "id": "05c754ac-39aa-43c6-8f0f-b6919ed7fb22",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a32f5367-dcf0-440f-a450-e2f92db6c905"
+      },
+      "usedVariables": [
+        "_startTime",
+        "_endTime"
+      ],
+      "text": "materialized_view('volume_5m')\n| where bin_start between (_startTime .. _endTime)\n| where symbol in (external_table('dim_pair') | where is_tracked == true | project symbol)\n| project bin_start, symbol, notional\n| order by bin_start asc"
+    },
+    {
+      "id": "9d11b0ea-c77d-40b9-9e13-d31b05aa3ce9",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a32f5367-dcf0-440f-a450-e2f92db6c905"
+      },
+      "usedVariables": [
+        "_startTime",
+        "_endTime"
+      ],
+      "text": "tracked_whale_trades()\n| where timestamp between (_startTime .. _endTime)\n| project timestamp, symbol, side, qty, price, notional, ord_type\n| order by timestamp desc\n| take 50"
+    }
+  ],
+  "tiles": [
+    {
+      "id": "784209fd-31ec-460d-8d10-09d396f13e61",
+      "title": "5-minute notional (USD) per tracked pair",
+      "visualType": "timechart",
+      "pageId": "e157eb82-aa7c-47dc-aa40-ef29add5f1da",
+      "layout": {
+        "x": 0,
+        "y": 0,
+        "width": 24,
+        "height": 9
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "05c754ac-39aa-43c6-8f0f-b6919ed7fb22"
+      },
+      "visualOptions": {
+        "multipleYAxes": {
+          "base": {
+            "id": "-1",
+            "label": "",
+            "columns": [],
+            "yAxisMinimumValue": null,
+            "yAxisMaximumValue": null,
+            "yAxisScale": "linear",
+            "horizontalLines": []
+          },
+          "additional": [],
+          "showMultiplePanels": false
+        },
+        "hideLegend": false,
+        "legendLocation": "bottom",
+        "xColumnTitle": "",
+        "xColumn": null,
+        "yColumns": null,
+        "seriesColumns": [
+          "symbol"
+        ],
+        "xAxisScale": "linear",
+        "verticalLine": "",
+        "crossFilterDisabled": false,
+        "drillthroughDisabled": false,
+        "crossFilter": [],
+        "drillthrough": []
+      }
+    },
+    {
+      "id": "5c7c8ac6-910b-4065-99c3-062085b0aa2b",
+      "title": "Recent whale trades",
+      "visualType": "table",
+      "pageId": "e157eb82-aa7c-47dc-aa40-ef29add5f1da",
+      "layout": {
+        "x": 0,
+        "y": 9,
+        "width": 24,
+        "height": 9
+      },
+      "queryRef": {
+        "kind": "query",
+        "queryId": "9d11b0ea-c77d-40b9-9e13-d31b05aa3ce9"
+      },
+      "visualOptions": {}
+    }
+  ],
+  "schema_version": "52",
+  "title": "rtd_trades_live"
+}

@@ -32,6 +32,22 @@
         }
       },
       "inputNodes": [{ "name": "es_trades-stream" }]
+    },
+    {
+      "name": "EventhouseTrades",
+      "type": "Eventhouse",
+      "properties": {
+        "dataIngestionMode": "ProcessedIngestion",
+        "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+        "itemId": "502ae692-ef4a-4b0f-be9f-f66546414d25",
+        "databaseName": "eh_trades",
+        "tableName": "trades_raw",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": { "encoding": "UTF8" }
+        }
+      },
+      "inputNodes": [{ "name": "es_trades-stream" }]
     }
   ],
   "compatibilityLevel": "1.0"

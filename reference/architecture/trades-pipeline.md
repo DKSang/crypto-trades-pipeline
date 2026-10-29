@@ -7,7 +7,7 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Step | Item | Schedule |
 |---|---|---|
 | Hold a Kraken WS v2 `trade` subscription for the tracked pairs (no REST; gaps between runs accepted, ADR 0007), normalise, send to `es_trades` custom endpoint | `nb_collect_trades` (Python notebook) | 55-minute runs on a schedule (pause outside demos) |
-| Hot path: whale trades, 5-minute volume per tracked pair | `eh_trades`, `rtd_trades_live`, Activator | live |
+| Hot path: `es_trades` Eventhouse destination → `eh_trades.trades_raw` (1 day) → update policy → `whale_trades` (notional ≥ `whale_threshold_usd`); `volume_5m` view; the tracked-pair rule (`dim_pair.is_tracked`) is applied when reading, by `tracked_whale_trades()` and the dashboard. Whale email by Activator. Only whale trades and 5-minute volume live here, no Gold KPI (ADR 0004) | `eh_trades`, `rtd_trades_live`, `act_whale_trades` | live |
 | Land raw trades | `es_trades` Lakehouse destination → `lh_crypto.bronze.trades` | commits every ~2 min |
 | Backfill a pair from a start time by REST `since` cursor into the same Bronze table | `nb_backfill_trades` via `pl_backfill_bronze_trades` | manual |
 | Pair metadata: Copy (REST) lands `AssetPairs` in `Files/bronze/asset_pairs/`, then `nb_build_dim_pair` merges tracked pairs into `gold.dim_pair` | `pl_ingest_bronze_asset_pairs` | daily 00:15 UTC |
@@ -52,7 +52,7 @@ Grain, keys and the double-counting rules of every table: `reference/architectur
 2. A Python notebook in Fabric holds the WS connection for a whole run. Passed for 6 minutes on 2026-10-28 (`nb_check_kraken_ws`); the full run length and sending to `es_trades` are checked in #7.
 3. CDF can be enabled on the Eventstream-written Bronze table. Passed 2026-10-28.
 4. GX 1.x runs on Spark DataFrames in `env_crypto`.
-5. KQL database reads `gold.dim_pair` through a OneLake shortcut.
+5. KQL database reads `gold.dim_pair` through a OneLake shortcut. Partly failed 2026-10-29 (#13): a shortcut made through the Items API did not become an external table; `eh_trades` reads `gold.dim_pair` through an external table over the lakehouse path instead, without query acceleration (`reference/lessons.md`).
 
 ## Out of scope
 

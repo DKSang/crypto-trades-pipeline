@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "KQLDashboard",
+    "displayName": "rtd_trades_live"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "6b2ee2c1-0af4-4b44-af8f-70afe5106d74"
+  }
+}

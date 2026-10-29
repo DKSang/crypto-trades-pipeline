@@ -1,0 +1,41 @@
+// Hot path of ADR 0004: whale trades and 5-minute volume per tracked pair, nothing else.
+// Applied with: python scripts/kql-run.py mgmt <query-uri> eh_trades <this file>
+// {{whale_threshold_usd}} is filled from vl_crypto by scripts/kql-run.py, which runs one command per blank-line block.
+// The threshold is copied into whale_trades_from_raw() when this runs: after changing it in vl_crypto, run this again.
+// `create-merge` and `ifnotexists` never change an existing table or volume_5m: drop volume_5m first to change its query.
+
+// Tracked pairs: Gold's dim_pair, read in place. Not a OneLake shortcut: see reference/lessons.md (spike 5).
+.create-or-alter external table dim_pair kind = delta (h@'https://onelake.dfs.fabric.microsoft.com/c8d6538e-e60c-467b-8440-dec5dae4d897/039e4fc7-5892-4238-9c2f-a260cb73fc9f/Tables/gold/dim_pair;impersonate')
+
+// Landing table of the es_trades Eventhouse destination: the Bronze shape, kept one day.
+.create-merge table trades_raw (symbol: string, side: string, price: real, qty: real, ord_type: string, trade_id: long, timestamp: datetime, _ingest_path: string, _load_ts: datetime)
+
+.alter-merge table trades_raw policy retention softdelete = 1d recoverability = disabled
+
+.alter table trades_raw policy ingestionbatching '{"MaximumBatchingTimeSpan":"00:00:10","MaximumNumberOfItems":500,"MaximumRawDataSizeMB":256}'
+
+// Whale trades, filled from trades_raw by an update policy. An update policy can't read dim_pair, so
+// tracked_whale_trades() applies the tracked-pair rule when the table is read.
+.create-merge table whale_trades (symbol: string, side: string, price: real, qty: real, notional: real, ord_type: string, trade_id: long, timestamp: datetime)
+
+.alter-merge table whale_trades policy retention softdelete = 30d recoverability = disabled
+
+.create-or-alter function with (folder = 'hot', docstring = 'Whale trades in trades_raw') whale_trades_from_raw() {
+    trades_raw
+    | extend notional = qty * price
+    | where notional >= {{whale_threshold_usd}}
+    | project symbol, side, price, qty, notional, ord_type, trade_id, timestamp
+}
+
+.alter table whale_trades policy update @'[{"IsEnabled":true,"Source":"trades_raw","Query":"whale_trades_from_raw()","IsTransactional":false}]'
+
+.create-or-alter function with (folder = 'hot', docstring = 'Whale trades of tracked pairs') tracked_whale_trades() {
+    whale_trades
+    | where symbol in (external_table('dim_pair') | where is_tracked == true | project symbol)
+}
+
+// 5-minute volume per pair. A materialized view can't read dim_pair, so tracked pairs are picked at query time.
+.create ifnotexists materialized-view volume_5m on table trades_raw {
+    trades_raw
+    | summarize volume = sum(qty), notional = sum(qty * price) by symbol, bin_start = bin(timestamp, 5m)
+}
