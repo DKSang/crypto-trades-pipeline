@@ -2,8 +2,8 @@
 
 ## Tenant
 
-- **Tenant ID**: `370fa88c-de52-4400-b6cd-027ef6a8ddf2`
-- **Agent identity**: service principal, app ID `b593a632-afcd-4c1b-b0bd-43080c0317ab`, principal ID `a93074e9-54c0-4ced-b846-143d8a51162c`. Secret in `.env` (`sp_secret`), never written here. `fab` and `az` both sign in as it via `scripts/fabric-login.sh`.
+- **Tenant ID**: `<tenant-id>`
+- **Agent identity**: service principal, app ID `<app-id>`, principal ID `<principal-id>`. Secret in `.env` (`sp_secret`), never written here. `fab` and `az` both sign in as it via `scripts/fabric-login.sh`.
 
 ## Scope
 
@@ -14,6 +14,8 @@
 `Crypto-DEV` was renamed from `Polymarket-DEV` on 2026-10-28 (same ID).
 
 ### Key items in Crypto-DEV
+
+**Removed from the workspace 2026-10-29** (for a clean lineage view; code unchanged in `fabric/Crypto-DEV/`, restore with `fab import "Crypto-DEV.Workspace/<name>.Notebook" -i fabric/Crypto-DEV/<name>.Notebook -f --format .py`): all `nb_test_*` (9), `nb_check_*` except `nb_check_silver_batch` (8) and `nb_benchmark_*` (2). Rows below that describe them are what the repo still holds, not what the workspace has. Their results stay in `lh_crypto` `Files/checks/`; run history of the deleted notebooks is gone.
 
 | Item | ID | Notes |
 | --- | --- | --- |
@@ -34,7 +36,7 @@
 | `env_crypto` (Environment) | `01a138e9-6b56-461d-8df6-a037f9c2afdc` | runtime 2.0, `great-expectations==1.24.1` and `azure-eventhub==5.15.1` from PyPI; attached to the gate notebooks only. Definition in `fabric/Crypto-DEV/env_crypto.Environment/`; `fab import` publishes it (~5 min) |
 | `nb_check_silver_batch` (Notebook), `nb_test_check_silver_batch`, `nb_check_gx_spark` | `6c331a17-79b8-40a4-b4f0-18ddd9185141` (gate) | quality gate on the Silver batch (see `reference/architecture/trades-pipeline.md`), results in `ops.dq_result` and `Files/checks/nb_check_silver_batch.json`. `nb_test_check_silver_batch` is seam 1 (9 cases on scratch tables `test.dq_*`); `nb_check_gx_spark` is spike 4. `nb_test_process_gold` (seam 2) now also runs the gate: runs 5 and 6 |
 | `es_dq_alerts` (Eventstream) | `6029ac53-764b-44c7-a217-b29c3751da0e` | custom endpoint `DqResults` → Activator `act_pipeline_alerts`; the gate sends one event per failed error-level check |
-| `act_pipeline_alerts` (Activator) | `cb3ccf6a-6dc5-4fe6-a2b9-b206a1c3e2e8` | rules `No trade for 10 minutes` (`es_trades` → `TradesPerMinute` count → `PipelineAlerts`; `NoHeartbeat` 10 min) and `Data quality error held Gold` (`es_dq_alerts`, every event); both email `luonggiacat604@gmail.com` (internal addresses only, see `reference/lessons.md`) |
+| `act_pipeline_alerts` (Activator) | `cb3ccf6a-6dc5-4fe6-a2b9-b206a1c3e2e8` | rules `No trade for 10 minutes` (`es_trades` → `TradesPerMinute` count → `PipelineAlerts`; `NoHeartbeat` 10 min) and `Data quality error held Gold` (`es_dq_alerts`, every event); both email `owner@example.com` (internal addresses only, see `reference/lessons.md`) |
 | `nb_backfill_trades` (Notebook), `pl_backfill_bronze_trades` (Data pipeline) | notebook `2dee9f6a-6b4a-49d3-8aa3-37b258857c0e`, pipeline `d1583d2d-8b4f-404c-a05f-74b52e5860b9` | manual backfill of one tracked pair: parameters `symbol`, `start`, optional `end` (UTC ISO 8601, `end` exclusive, empty = to the newest trade) and `bronze_table` (default `bronze.trades`); pages REST `since` by `last`, 1 call/s, appends with `_ingest_path` `backfill`, summary in `Files/checks/nb_backfill_trades.json`. Pure conversion and paging unit-tested by `python -m unittest discover tests`; `nb_test_backfill_trades` (scratch tables `test.bf_*`, runs `pl_process_gold` 3 times and `pl_backfill_bronze_trades` twice against real Kraken REST, 5 steps passed 2026-10-29) writes `Files/checks/nb_test_backfill_trades.json` |
 | `nb_reconcile_hot_gold` (Notebook), `nb_check_reconcile_daily`, `nb_test_reconcile_hot_gold` | `c2762e78-e736-4f3e-a575-6d082628e08d` (reconcile) | daily reconcile of `eh_trades.hot_daily` against `gold.fact_trade` into `ops.reconcile_daily` (see `reference/architecture/trades-pipeline.md`); finds `eh_trades` through the Items API, reads it with `notebookutils.credentials.getToken('kusto')`; summary in `Files/checks/nb_reconcile_hot_gold.json`. `nb_check_reconcile_daily` is the read-only check of the real table (`Files/checks/nb_check_reconcile_daily.json`). `nb_test_reconcile_hot_gold` is seam 1 (9 cases passed 2026-10-29 on scratch tables `test.rc_*`, the hot totals passed in as a DataFrame), result in `Files/checks/nb_test_reconcile_hot_gold.json` |
 | `Kraken REST` (tenant Connection, not in a workspace) | `32dc1617-c9f4-43a7-a694-f896c06e446a` | `RestService`, `https://api.kraken.com`, Anonymous; created 2026-10-28 with the user's explicit OK |
