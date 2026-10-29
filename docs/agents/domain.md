@@ -12,8 +12,6 @@ Layout: **single-context**, but placed inside the Fabric brain (`reference/`) in
 
 If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. They are created lazily when terms or decisions actually get resolved.
 
-Never read `docs/prior-art/` as a source of terms or decisions: it is an old design with known wrong decisions.
-
 ## File structure
 
 ```

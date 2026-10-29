@@ -7,8 +7,6 @@ This folder is the second brain for the crypto trades pipeline's Microsoft Fabri
 
 Before any Fabric work, read the `reference/` files relevant to the task (index below). Use their names and vocabulary verbatim. If a request contradicts them, say so before acting.
 
-`docs/prior-art/` is an old design with known wrong decisions. Never use it as a source for conventions or design.
-
 ## Guardrails
 
 - **Scope.** You may create or modify items only in `Crypto-DEV`. Every other workspace (including `Polymarket-old-DEV`) is read-only; never modify it, even if asked casually, without explicit confirmation naming the workspace.
