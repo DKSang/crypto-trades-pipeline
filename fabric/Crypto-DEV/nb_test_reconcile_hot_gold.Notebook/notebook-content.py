@@ -108,7 +108,7 @@ def load_bronze(rows):
 
 def load_fact(keys):
     rows = [fact_row(k) for k in keys]
-    spark.createDataFrame(rows, FACT_DDL.replace("trade_ts TIMESTAMP", "trade_ts STRING").replace("trade_date DATE", "trade_date STRING")) \
+    spark.createDataFrame(rows, FACT_STAGE_DDL) \
         .selectExpr("symbol", "trade_id", "to_timestamp(trade_ts) AS trade_ts", "to_date(trade_date) AS trade_date",
                     "side", "ord_type", "price", "qty", "notional", "_silver_version") \
         .write.format("delta").mode("append").saveAsTable(FACT)

@@ -103,22 +103,22 @@ def reconcile(bronze, fact, hot, reconcile_table, tracked):
                  .select("trade_date", "symbol", "trade_id", "notional"))
     gold_totals = per_pair_day(gold_keys, gold_trades=F.count("*"), gold_notional=F.sum("notional"))
 
-    ws_rows = (spark.table(bronze).where("coalesce(_ingest_path, '') <> 'backfill' AND trade_id IS NOT NULL")
+    live_rows = (spark.table(bronze).where("coalesce(_ingest_path, '') <> 'backfill' AND trade_id IS NOT NULL")
                .where(F.col("symbol").isin(tracked))
                .withColumn("trade_date", F.to_date(F.try_to_timestamp("timestamp")))
                .join(days, "trade_date")
                .select("trade_date", "symbol", "trade_id", finite_notional("price", "qty").alias("notional")))
-    ws_row_totals = per_pair_day(ws_rows, ws_trades=F.count("*"), ws_notional=F.sum("notional"))
-    ws_keys = ws_rows.groupBy("trade_date", "symbol", "trade_id").agg(F.first("notional").alias("notional"))
-    ws_key_totals = per_pair_day(ws_keys, ws_key_trades=F.count("*"), ws_key_notional=F.sum("notional"))
+    live_row_totals = per_pair_day(live_rows, live_trades=F.count("*"), live_notional=F.sum("notional"))
+    live_keys = live_rows.groupBy("trade_date", "symbol", "trade_id").agg(F.first("notional").alias("notional"))
+    live_key_totals = per_pair_day(live_keys, live_key_trades=F.count("*"), live_key_notional=F.sum("notional"))
 
-    late_totals = per_pair_day(ws_keys.join(gold_keys.select("symbol", "trade_id"), ["symbol", "trade_id"], "left_anti"),
+    late_totals = per_pair_day(live_keys.join(gold_keys.select("symbol", "trade_id"), ["symbol", "trade_id"], "left_anti"),
                                late_trades=F.count("*"), late_notional=F.sum("notional"))
-    backfill_totals = per_pair_day(gold_keys.join(ws_keys.select("symbol", "trade_id"), ["symbol", "trade_id"], "left_anti"),
+    backfill_totals = per_pair_day(gold_keys.join(live_keys.select("symbol", "trade_id"), ["symbol", "trade_id"], "left_anti"),
                                    backfill_trades=F.count("*"), backfill_notional=F.sum("notional"))
 
     joined = grid
-    for part in (hot_totals, gold_totals, ws_row_totals, ws_key_totals, late_totals, backfill_totals):
+    for part in (hot_totals, gold_totals, live_row_totals, live_key_totals, late_totals, backfill_totals):
         joined = joined.join(part, ["trade_date", "symbol"], "left")
     zeroed = joined.na.fill(0)
     batch = zeroed.select(
@@ -127,12 +127,12 @@ def reconcile(bronze, fact, hot, reconcile_table, tracked):
         F.col("gold_trades").cast("bigint"), "gold_notional",
         (F.col("hot_trades") - F.col("gold_trades")).cast("bigint").alias("gap_trades"),
         F.round(F.col("hot_notional") - F.col("gold_notional"), 6).alias("gap_notional"),
-        (F.col("ws_trades") - F.col("ws_key_trades")).cast("bigint").alias("duplicates_trades"),
-        F.round(F.col("ws_notional") - F.col("ws_key_notional"), 6).alias("duplicates_notional"),
+        (F.col("live_trades") - F.col("live_key_trades")).cast("bigint").alias("duplicates_trades"),
+        F.round(F.col("live_notional") - F.col("live_key_notional"), 6).alias("duplicates_notional"),
         F.col("late_trades").cast("bigint"), "late_notional",
         F.col("backfill_trades").cast("bigint"), "backfill_notional",
-        (F.col("hot_trades") - F.col("ws_trades")).cast("bigint").alias("unexplained_trades"),
-        F.round(F.col("hot_notional") - F.col("ws_notional"), 6).alias("unexplained_notional"),
+        (F.col("hot_trades") - F.col("live_trades")).cast("bigint").alias("unexplained_trades"),
+        F.round(F.col("hot_notional") - F.col("live_notional"), 6).alias("unexplained_notional"),
         F.current_timestamp().alias("_reconciled_ts"))
     batch.createOrReplaceTempView("reconcile_batch")
     merged = spark.sql(f"""
@@ -160,14 +160,14 @@ def api_headers():
     return {"Authorization": f"Bearer {notebookutils.credentials.getToken('pbi')}", "x-ms-fabric-skill": "eventhouse-cli"}
 
 
-def find_kql_database(name):
+def find_query_uri(name):
     workspace_id = notebookutils.runtime.context["currentWorkspaceId"]
     response = requests.get(f"{API}/workspaces/{workspace_id}/kqlDatabases", headers=api_headers())
     response.raise_for_status()
     matches = [i["properties"] for i in response.json()["value"] if i["displayName"] == name]
     if len(matches) != 1:
         raise RuntimeError(f"Expected one KQL database named {name}, found {len(matches)}")
-    return matches[0]["queryServiceUri"], name  # a query names its database by display name
+    return matches[0]["queryServiceUri"]
 
 
 def read_hot(query_uri, database, from_day):
@@ -194,8 +194,9 @@ if not globals().get("library_only", False):
 
         # Default: yesterday and today (UTC). A backfill of an older day is reconciled by passing its date.
         start = from_date or (date.today() - timedelta(days=1)).isoformat()
-        query_uri, database = find_kql_database(kql_database)
-        summary = reconcile(bronze_table, fact_table, read_hot(query_uri, database, start), reconcile_table, tracked_pairs)
+        # A query names its database by its display name.
+        hot = read_hot(find_query_uri(kql_database), kql_database, start)
+        summary = reconcile(bronze_table, fact_table, hot, reconcile_table, tracked_pairs)
     except Exception:
         # A failed run's failureReason carries no traceback (reference/lessons.md).
         notebookutils.fs.put(RESULT_PATH, json.dumps({"failed": traceback.format_exc()}, indent=2), True)
