@@ -74,12 +74,14 @@ def agg_pair_daily_select(fact):
 
 
 def ensure_tables(fact, dim_pair, dim_date, watermark):
-    # fact_trade has Change Data Feed on: the MLV reads it (ADR 0003).
+    # fact_trade has Change Data Feed on and is partitioned by trade_date, the MLV's GROUP BY column:
+    # together they let agg_pair_daily refresh incrementally even with min_by/max_by (reference/lessons.md).
+    # An existing unpartitioned table is not altered by this statement: it has to be recreated.
     spark.sql(f"""
     CREATE TABLE IF NOT EXISTS {fact} (
         symbol STRING, trade_id BIGINT, trade_ts TIMESTAMP, trade_date DATE, side STRING, ord_type STRING,
         price DOUBLE, qty DOUBLE, notional DOUBLE, _silver_version BIGINT
-    ) USING DELTA TBLPROPERTIES (delta.enableChangeDataFeed = true)
+    ) USING DELTA PARTITIONED BY (trade_date) TBLPROPERTIES (delta.enableChangeDataFeed = true)
     """)
     # Same columns as nb_build_dim_pair, which owns base, quote and status; this notebook only adds
     # a row for a pair that has trades but no row yet.

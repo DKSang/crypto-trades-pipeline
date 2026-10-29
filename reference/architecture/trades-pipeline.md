@@ -34,9 +34,9 @@ About 350,000 trades a day (~4/s) on that date.
 
 ## Gold
 
-Grain, keys and the double-counting rules of every table: `reference/architecture/gold-model.md`. `nb_load_gold` reads `silver.trades` by Change Data Feed commit version (watermark row `silver.trades` in `ops.etl_watermark`) and loads with insert-only `MERGE`s. `agg_pair_daily` is created and fully refreshed by `nb_refresh_agg_pair_daily`, not by the pipeline's Refresh Materialized Lake View activity (no service principal support, refreshes the whole lakehouse; [Learn](https://learn.microsoft.com/fabric/data-factory/refresh-materialized-lake-view-activity)).
+Grain, keys and the double-counting rules of every table: `reference/architecture/gold-model.md`. `nb_load_gold` reads `silver.trades` by Change Data Feed commit version (watermark row `silver.trades` in `ops.etl_watermark`) and loads with insert-only `MERGE`s. `agg_pair_daily` is created and refreshed (optimal; `FULL` on Sundays) by `nb_refresh_agg_pair_daily`, not by the pipeline's Refresh Materialized Lake View activity (no service principal support, refreshes the whole lakehouse; [Learn](https://learn.microsoft.com/fabric/data-factory/refresh-materialized-lake-view-activity)).
 
-- `fact_trade`: one trade, key (`symbol`, `trade_id`), with `notional` = qty × price.
+- `fact_trade`: one trade, key (`symbol`, `trade_id`), with `notional` = qty × price; partitioned by `trade_date`.
 - `dim_pair` (`symbol`, base, quote, status, tracked flag; one row per pair ever tracked, an untracked pair keeps its row with the flag off), `dim_date`.
 - `agg_pair_daily` (MLV): pair × UTC day, with open, high, low, close, volume, notional, VWAP, trade count and taker-buy notional.
 - Whale share of notional and taker buy/sell pressure are measures in `sm_trades`, never stored or summed.
