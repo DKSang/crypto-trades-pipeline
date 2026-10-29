@@ -6,15 +6,6 @@
       "properties": {}
     }
   ],
-  "streams": [
-    {
-      "name": "es_trades-stream",
-      "type": "DefaultStream",
-      "properties": {},
-      "inputNodes": [{ "name": "TradesCollector" }]
-    }
-  ],
-  "operators": [],
   "destinations": [
     {
       "name": "BronzeTrades",
@@ -28,10 +19,35 @@
         "maximumDurationInSeconds": 900,
         "inputSerialization": {
           "type": "Json",
-          "properties": { "encoding": "UTF8" }
+          "properties": {
+            "encoding": "UTF8"
+          }
         }
       },
-      "inputNodes": [{ "name": "es_trades-stream" }]
+      "inputNodes": [
+        {
+          "name": "es_trades-stream"
+        }
+      ]
+    },
+    {
+      "name": "PipelineAlerts",
+      "type": "Activator",
+      "properties": {
+        "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+        "itemId": "cb3ccf6a-6dc5-4fe6-a2b9-b206a1c3e2e8",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "TradesPerMinuteStream"
+        }
+      ]
     },
     {
       "name": "EventhouseTrades",
@@ -44,10 +60,85 @@
         "tableName": "trades_raw",
         "inputSerialization": {
           "type": "Json",
-          "properties": { "encoding": "UTF8" }
+          "properties": {
+            "encoding": "UTF8"
+          }
         }
       },
-      "inputNodes": [{ "name": "es_trades-stream" }]
+      "inputNodes": [
+        {
+          "name": "es_trades-stream"
+        }
+      ]
+    }
+  ],
+  "streams": [
+    {
+      "name": "es_trades-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [
+        {
+          "name": "TradesCollector"
+        }
+      ]
+    },
+    {
+      "name": "TradesPerMinuteStream",
+      "type": "DerivedStream",
+      "properties": {
+        "inputSerialization": {
+          "type": "Json",
+          "properties": {
+            "encoding": "UTF8"
+          }
+        }
+      },
+      "inputNodes": [
+        {
+          "name": "TradesPerMinute"
+        }
+      ]
+    }
+  ],
+  "operators": [
+    {
+      "name": "TradesPerMinute",
+      "type": "GroupBy",
+      "inputNodes": [
+        {
+          "name": "es_trades-stream"
+        }
+      ],
+      "properties": {
+        "aggregations": [
+          {
+            "aggregateFunction": "Count",
+            "arguments": null,
+            "column": {
+              "expressionType": "ColumnReference",
+              "node": null,
+              "columnName": "trade_id",
+              "columnPathSegments": []
+            },
+            "alias": "trade_count"
+          }
+        ],
+        "groupBy": [],
+        "window": {
+          "type": "Tumbling",
+          "properties": {
+            "duration": {
+              "value": 1,
+              "unit": "Minute"
+            },
+            "offset": {
+              "value": 0,
+              "unit": "Minute"
+            }
+          }
+        }
+      }
     }
   ],
   "compatibilityLevel": "1.0"

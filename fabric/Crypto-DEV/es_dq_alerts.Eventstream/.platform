@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Eventstream",
+    "displayName": "es_dq_alerts"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "9f3c7a2e-14d8-4b65-a0c9-6e2b8d5f1a73"
+  }
+}

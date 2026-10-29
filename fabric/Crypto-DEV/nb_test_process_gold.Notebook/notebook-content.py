@@ -27,7 +27,12 @@
 #   run 2  overlapping batch (resends, new trades, an untracked pair) -> still matches, nothing doubled
 #   run 3  new batch with the Gold failure forced         -> pipeline fails, Gold watermark unchanged
 #   run 4  same pipeline without the failure              -> reads the same range, Gold matches
-# Fixtures are real Kraken trades (REST /0/public/Trades, 2026-10-28) in the Bronze shape the
+#   run 5  a duplicate key written into Silver (issue #12) -> the quality gate fails the pipeline, Gold and
+#                                                            its watermark stay, an error row lands in
+#                                                            ops.dq_result and the alert event is sent
+#   run 6  the duplicate removed, same pipeline            -> passes, Gold matches, the watermark moves
+# Runs 1 to 4 also show that warn-level failures (stale fixtures, trade_id gaps) are recorded and do not
+# block Gold. Fixtures are real Kraken trades (REST /0/public/Trades, 2026-10-28) in the Bronze shape the
 # collector sends. Expected rows come from a plain-Python oracle, not from the code under test.
 # Results go to Files/checks/nb_test_process_gold.json; the run fails if a step fails.
 
@@ -41,7 +46,8 @@ from pyspark.sql import functions as F
 RESULT_PATH = "Files/checks/nb_test_process_gold.json"
 PIPELINE = "pl_process_gold"
 T = {name: f"test.it_{name}" for name in
-     ["bronze_trades", "silver_trades", "quarantine_trades", "etl_watermark", "fact_trade", "dim_pair", "dim_date", "agg_pair_daily"]}
+     ["bronze_trades", "silver_trades", "quarantine_trades", "etl_watermark", "fact_trade", "dim_pair", "dim_date", "agg_pair_daily",
+      "dq_result"]}
 BRONZE_SCHEMA = ("symbol STRING, side STRING, price DOUBLE, qty DOUBLE, ord_type STRING, "
                  "trade_id BIGINT, timestamp STRING, _ingest_path STRING, _load_ts STRING")
 
@@ -148,6 +154,9 @@ def reset():
         if name != "agg_pair_daily":
             spark.sql(f"DROP TABLE IF EXISTS {table}")
     spark.sql(f"CREATE TABLE {T['bronze_trades']} ({BRONZE_SCHEMA}) USING DELTA TBLPROPERTIES (delta.enableChangeDataFeed = true)")
+    # The quality gate needs every pair of the batch in dim_pair; in DEV nb_build_dim_pair has put them there.
+    spark.sql(f"CREATE TABLE {T['dim_pair']} (symbol STRING, base STRING, quote STRING, status STRING, is_tracked BOOLEAN) USING DELTA")
+    spark.sql(f"INSERT INTO {T['dim_pair']} VALUES ('BTC/USD', 'BTC', 'USD', 'online', true), ('ETH/USD', 'ETH', 'USD', 'online', true)")
 
 
 def land(rows):
@@ -170,11 +179,13 @@ def pipeline_id():
     return matches[0]
 
 
-def run_pipeline(fail_gold_after_write=False, timeout_s=1200):
+def run_pipeline(fail_gold_after_write=False, send_dq_alerts=False, timeout_s=1200):
+    # Alerts stay off except in the run that proves the alert is sent: every error-level failure would mail the operator.
     parameters = {"bronze_table": T["bronze_trades"], "silver_table": T["silver_trades"],
                   "quarantine_table": T["quarantine_trades"], "fact_table": T["fact_trade"],
                   "dim_pair_table": T["dim_pair"], "dim_date_table": T["dim_date"],
                   "watermark_table": T["etl_watermark"], "mlv_table": T["agg_pair_daily"],
+                  "dq_result_table": T["dq_result"], "send_dq_alerts": send_dq_alerts,
                   "fail_gold_after_write": fail_gold_after_write}
     response = requests.post(f"{API}/workspaces/{WORKSPACE_ID}/items/{pipeline_id()}/jobs/instances?jobType=Pipeline",
                              headers=api_headers(), json={"executionData": {"parameters": parameters}})
@@ -211,6 +222,12 @@ def run_1():
     check_equal(wm_bronze, table_version(T["bronze_trades"]), "run 1 bronze watermark")
     check_equal(wm_silver, table_version(T["silver_trades"]), "run 1 silver watermark")
     evidence["watermarks_after_run_1"] = {"bronze": wm_bronze, "silver": wm_silver}
+    # The fixtures are a day old and have trade_id gaps: both are warns, recorded, and Gold was loaded anyway.
+    results = {r["check_id"]: r for r in spark.table(T["dq_result"]).collect()}
+    check_equal(sorted(results), ["freshness", "key_unique", "ref_integrity_dim_pair", "row_count", "schema", "trade_id_contiguity"],
+                "run 1 recorded checks")
+    check_equal(sorted(c for c, r in results.items() if not r["passed"]), ["freshness", "trade_id_contiguity"], "run 1 failed checks")
+    check_equal({r["severity"] for r in results.values() if not r["passed"]}, {"warn"}, "run 1 failed severities")
     return run
 
 
@@ -256,9 +273,57 @@ def run_4_rerun_reads_the_same_range():
     return run
 
 
+def gate_summary():
+    # The gate writes its summary before it raises, so the file describes the run that just failed.
+    with open("/lakehouse/default/Files/checks/nb_check_silver_batch.json") as f:
+        return json.load(f)
+
+
+def run_5_duplicate_key_blocks_gold():
+    before = watermarks()
+    fact_version_before = table_version(T["fact_trade"])
+    fact_before = sorted((r["symbol"], r["trade_id"]) for r in spark.table(T["fact_trade"]).collect())
+    aggregate_before = [r.asDict() for r in spark.table(T["agg_pair_daily"]).orderBy("symbol", "trade_date").collect()]
+    # A copy of a trade Gold already holds, written straight into Silver as a faulty Silver load would.
+    spark.sql(f"""INSERT INTO {T['silver_trades']}
+                  SELECT symbol, trade_id, side, price, qty, ord_type, trade_ts, _ingest_path, _load_ts, 999999
+                  FROM {T['silver_trades']} WHERE symbol = 'BTC/USD' AND trade_id = {KEYS[4][1]}""")
+    run = run_pipeline(send_dq_alerts=True)
+    check_equal(run["status"], "Failed", "run 5 status")
+    check_equal(table_version(T["fact_trade"]), fact_version_before, "fact_trade must not be written")
+    check_equal(sorted((r["symbol"], r["trade_id"]) for r in spark.table(T["fact_trade"]).collect()), fact_before, "fact keys after the blocked run")
+    check_equal([r.asDict() for r in spark.table(T["agg_pair_daily"]).orderBy("symbol", "trade_date").collect()], aggregate_before,
+                "agg_pair_daily after the blocked run")
+    after = watermarks()
+    check_equal(after, before, "both watermarks after the blocked run (nothing new in Bronze, Gold held)")
+    errors = spark.table(T["dq_result"]).where("severity = 'error' AND NOT passed").collect()
+    check_equal([r["check_id"] for r in errors], ["key_unique"], "failed error-level checks")
+    summary = gate_summary()
+    check_equal(summary["errors"], ["key_unique"], "gate summary errors")
+    check_equal(summary["alert"], "sent", "alert event to es_dq_alerts")
+    evidence["watermarks_after_run_5"] = {"bronze": after[0], "silver": after[1]}
+    evidence["dq_error_row_run_5"] = {"check_id": errors[0]["check_id"], "unexpected_count": errors[0]["unexpected_count"]}
+    return run
+
+
+def run_6_after_the_fix():
+    before = watermarks()
+    spark.sql(f"DELETE FROM {T['silver_trades']} WHERE _bronze_version = 999999")
+    run = run_pipeline()
+    check_equal(run["status"], "Completed", "run 6 status")
+    check_gold_matches(4)  # the same trades as before: the faulty copy never reached Gold
+    after = watermarks()
+    check_equal(after[1], table_version(T["silver_trades"]), "gold watermark after the fix")
+    check(after[1] > before[1], f"the Gold watermark should move: {before} -> {after}")
+    evidence["watermarks_after_run_6"] = {"bronze": after[0], "silver": after[1]}
+    return run
+
+
 for name, fn in [("run_1_fixture", run_1), ("run_2_overlapping_batch", run_2),
                  ("run_3_forced_gold_failure_keeps_gold_watermark", run_3_forced_gold_failure),
-                 ("run_4_rerun_reads_the_same_range", run_4_rerun_reads_the_same_range)]:
+                 ("run_4_rerun_reads_the_same_range", run_4_rerun_reads_the_same_range),
+                 ("run_5_duplicate_key_blocks_gold", run_5_duplicate_key_blocks_gold),
+                 ("run_6_after_the_fix", run_6_after_the_fix)]:
     if not step(name, fn):
         break  # the steps share state: after a failure the next one proves nothing
 

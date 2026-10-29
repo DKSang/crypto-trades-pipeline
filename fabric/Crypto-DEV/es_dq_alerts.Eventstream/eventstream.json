@@ -1,0 +1,34 @@
+{
+  "sources": [
+    {
+      "name": "DqResults",
+      "type": "CustomEndpoint",
+      "properties": {}
+    }
+  ],
+  "streams": [
+    {
+      "name": "es_dq_alerts-stream",
+      "type": "DefaultStream",
+      "properties": {},
+      "inputNodes": [{ "name": "DqResults" }]
+    }
+  ],
+  "operators": [],
+  "destinations": [
+    {
+      "name": "PipelineAlerts",
+      "type": "Activator",
+      "properties": {
+        "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+        "itemId": "cb3ccf6a-6dc5-4fe6-a2b9-b206a1c3e2e8",
+        "inputSerialization": {
+          "type": "Json",
+          "properties": { "encoding": "UTF8" }
+        }
+      },
+      "inputNodes": [{ "name": "es_dq_alerts-stream" }]
+    }
+  ],
+  "compatibilityLevel": "1.0"
+}

@@ -11,7 +11,8 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Land raw trades | `es_trades` Lakehouse destination → `lh_crypto.bronze.trades` | commits every ~2 min |
 | Backfill a pair from a start time by REST `since` cursor into the same Bronze table | `nb_backfill_trades` via `pl_backfill_bronze_trades` | manual |
 | Pair metadata: Copy (REST) lands `AssetPairs` in `Files/bronze/asset_pairs/`, then `nb_build_dim_pair` merges tracked pairs into `gold.dim_pair` | `pl_ingest_bronze_asset_pairs` | daily 00:15 UTC |
-| Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check) → `nb_load_silver`; Gold (`fact_trade`, `dim_pair`, `dim_date`) → `nb_load_gold`; MLV create and refresh → `nb_refresh_agg_pair_daily`. GX and hot vs Gold reconcile come later | `pl_process_gold` | hourly (Cron, every 60 min, UTC) |
+| Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check) → `nb_load_silver`; quality gate on the Silver batch → `nb_check_silver_batch` (GX, `env_crypto`); Gold (`fact_trade`, `dim_pair`, `dim_date`) → `nb_load_gold`; MLV create and refresh → `nb_refresh_agg_pair_daily`. Hot vs Gold reconcile comes later | `pl_process_gold` | hourly (Cron, every 60 min, UTC) |
+| Alerts: no trade for 10 minutes (`es_trades` → count per minute → Activator), error-level DQ check failed (`nb_check_silver_batch` → `es_dq_alerts` → Activator) | `act_pipeline_alerts` | live |
 | Serve | `sm_trades` (Direct Lake), `rpt_trades_overview` | |
 
 ## Testing
@@ -32,6 +33,23 @@ About 350,000 trades a day (~4/s) on that date.
 
 `silver.trades` (`nb_load_silver`): key (`symbol`, `trade_id`), `trade_ts` and `_load_ts` cast to `TIMESTAMP`, `_bronze_version` = the Bronze commit that carried the first copy. Only tracked pairs. A row breaking a rule goes to `ops.quarantine_trades` with one rule ID, the first that fails: `null_key`, `non_positive_qty`, `non_positive_price` (null, zero, negative, NaN and Infinity all fail), `invalid_side`, `invalid_ord_type`, `invalid_timestamp` (a `timestamp` Silver can't cast). Each run reports missing `trade_id`s per pair (`gaps`); gaps never stop the load.
 
+## Quality gate
+
+`nb_check_silver_batch` runs in `pl_process_gold` between Silver and Gold. The batch is what Silver committed after Gold's watermark (the same Change Data Feed range `nb_load_gold` reads). Table-level Great Expectations checks (`env_crypto`, spike 4) run on it; every result goes to `ops.dq_result` (`run_id`, `checked_ts`, `table_name`, `from_version`, `to_version`, `check_id`, `severity`, `passed`, `unexpected_count`, `details`). An empty batch checks and records nothing.
+
+| `check_id` | Severity | Passes when |
+|---|---|---|
+| `schema` | error | the batch has exactly Silver's columns, in order, with Silver's types |
+| `key_unique` | error | (`symbol`, `trade_id`) is unique in Silver among the batch's keys, old rows included |
+| `ref_integrity_dim_pair` | error | every `symbol` of the batch has a row in `gold.dim_pair` |
+| `row_count` | warn | the batch is at most 3 × the average daily row count of Silver's last 7 days before it (skipped with fewer than 2 days) |
+| `freshness` | warn | the newest `_load_ts` in the batch is under 3 hours old |
+| `trade_id_contiguity` | warn | no missing `trade_id` between a batch pair's first and last in Silver |
+
+An error makes the notebook raise, which skips the Gold activities of the pipeline and so holds Gold's watermark; it also sends one event per failed error check to `es_dq_alerts`. A warn is only recorded. The volume, age and contiguity checks are warns because a backfill or a collector pause legitimately breaks their baselines and none of them makes a row wrong (ADR 0007). The gate never writes Gold or moves a watermark. After the cause is fixed (for example a duplicate removed from Silver) the next run reads the same range again; Gold's own dedupe makes the earlier insert in the Change Data Feed harmless.
+
+`gold.dim_pair` must hold every tracked pair before the first Gold run: a new tracked pair blocks Gold until `pl_ingest_bronze_asset_pairs` (or `nb_build_dim_pair`) has added it. The gate does not run on an empty batch (no new Silver commit), so a stalled Silver is not visible in `ops.dq_result`; the "no trade for 10 minutes" alert watches the events `es_trades` receives from the collector, which is the same stream Bronze is fed from.
+
 ## Gold
 
 Grain, keys and the double-counting rules of every table: `reference/architecture/gold-model.md`. `nb_load_gold` reads `silver.trades` by Change Data Feed commit version (watermark row `silver.trades` in `ops.etl_watermark`) and loads with insert-only `MERGE`s. `agg_pair_daily` is created and refreshed (optimal; `FULL` on Sundays) by `nb_refresh_agg_pair_daily`, not by the pipeline's Refresh Materialized Lake View activity (no service principal support, refreshes the whole lakehouse; [Learn](https://learn.microsoft.com/fabric/data-factory/refresh-materialized-lake-view-activity)).
@@ -51,7 +69,7 @@ Grain, keys and the double-counting rules of every table: `reference/architectur
 1. WS and REST describe the same trades. Passed locally 2026-10-28 (see `reference/lessons.md`).
 2. A Python notebook in Fabric holds the WS connection for a whole run. Passed for 6 minutes on 2026-10-28 (`nb_check_kraken_ws`); the full run length and sending to `es_trades` are checked in #7.
 3. CDF can be enabled on the Eventstream-written Bronze table. Passed 2026-10-28.
-4. GX 1.x runs on Spark DataFrames in `env_crypto`.
+4. GX 1.x runs on Spark DataFrames in `env_crypto`. Passed 2026-10-29 (`nb_check_gx_spark`, see `reference/lessons.md`).
 5. KQL database reads `gold.dim_pair` through a OneLake shortcut. Partly failed 2026-10-29 (#13): a shortcut made through the Items API did not become an external table; `eh_trades` reads `gold.dim_pair` through an external table over the lakehouse path instead, without query acceleration (`reference/lessons.md`).
 
 ## Out of scope
