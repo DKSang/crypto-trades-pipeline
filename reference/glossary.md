@@ -39,3 +39,11 @@ _Avoid_: watchlist, selected market
 **Gap**:
 A run of missing `trade_id` values in one pair; accepted between collector runs (ADR 0007), reported by Silver's contiguity check and filled by backfill when needed.
 _Avoid_: hole, missing data
+
+**Hot path**:
+The live side of the pipeline (`eh_trades`, `rtd_trades_live`, `act_whale_trades`): whale trades and 5-minute volume, never an official number (ADR 0004).
+_Avoid_: streaming layer, speed layer
+
+**Reconcile gap**:
+For one pair and UTC day, the hot path's trade count (or notional) minus Gold's, split into causes (duplicates, late, backfill, unexplained) in `ops.reconcile_daily`. Not a **Gap**, which is missing `trade_id`s.
+_Avoid_: mismatch, drift

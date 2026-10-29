@@ -7,11 +7,11 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Step | Item | Schedule |
 |---|---|---|
 | Hold a Kraken WS v2 `trade` subscription for the tracked pairs (no REST; gaps between runs accepted, ADR 0007), normalise, send to `es_trades` custom endpoint | `nb_collect_trades` (Python notebook) | 55-minute runs on a schedule (pause outside demos) |
-| Hot path: `es_trades` Eventhouse destination → `eh_trades.trades_raw` (1 day) → update policy → `whale_trades` (notional ≥ `whale_threshold_usd`); `volume_5m` view; the tracked-pair rule (`dim_pair.is_tracked`) is applied when reading, by `tracked_whale_trades()` and the dashboard. Whale email by Activator. Only whale trades and 5-minute volume live here, no Gold KPI (ADR 0004) | `eh_trades`, `rtd_trades_live`, `act_whale_trades` | live |
+| Hot path: `es_trades` Eventhouse destination → `eh_trades.trades_raw` (1 day) → update policy → `whale_trades` (notional ≥ `whale_threshold_usd`); `volume_5m` view; the tracked-pair rule (`dim_pair.is_tracked`) is applied when reading, by `tracked_whale_trades()` and the dashboard. Whale email by Activator. Only whale trades, 5-minute volume and the daily event totals `hot_daily` (for the reconcile) live here, no Gold KPI (ADR 0004) | `eh_trades`, `rtd_trades_live`, `act_whale_trades` | live |
 | Land raw trades | `es_trades` Lakehouse destination → `lh_crypto.bronze.trades` | commits every ~2 min |
 | Backfill a pair from a start time by REST `since` cursor into the same Bronze table | `nb_backfill_trades` via `pl_backfill_bronze_trades` | manual |
 | Pair metadata: Copy (REST) lands `AssetPairs` in `Files/bronze/asset_pairs/`, then `nb_build_dim_pair` merges tracked pairs into `gold.dim_pair` | `pl_ingest_bronze_asset_pairs` | daily 00:15 UTC |
-| Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check) → `nb_load_silver`; quality gate on the Silver batch → `nb_check_silver_batch` (GX, `env_crypto`); Gold (`fact_trade`, `dim_pair`, `dim_date`) → `nb_load_gold`; MLV create and refresh → `nb_refresh_agg_pair_daily`. Hot vs Gold reconcile comes later | `pl_process_gold` | hourly (Cron, every 60 min, UTC) |
+| Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check) → `nb_load_silver`; quality gate on the Silver batch → `nb_check_silver_batch` (GX, `env_crypto`); Gold (`fact_trade`, `dim_pair`, `dim_date`) → `nb_load_gold`; MLV create and refresh → `nb_refresh_agg_pair_daily`; daily reconcile of the hot path against Gold → `nb_reconcile_hot_gold` (last step, writes `ops.reconcile_daily` only) | `pl_process_gold` | hourly (Cron, every 60 min, UTC) |
 | Alerts: no trade for 10 minutes (`es_trades` → count per minute → Activator), error-level DQ check failed (`nb_check_silver_batch` → `es_dq_alerts` → Activator) | `act_pipeline_alerts` | live |
 | Serve: Direct Lake model on the four Gold tables (relationships on the foreign keys of `gold-model.md`; ratios and roll-ups are measures), and a three-page report, one page per batch question B1-B3, each showing when the data was last refreshed (newest trade in Gold). Tested by `nb_test_sm_trades` | `sm_trades` (Direct Lake), `rpt_trades_overview` | none of its own: Direct Lake frames a table when its Delta data changes (DOCUMENTED, [Learn](https://learn.microsoft.com/fabric/fundamentals/direct-lake-how-it-works#automatic-updates); the setting on `sm_trades` was not read) |
 
@@ -49,6 +49,23 @@ About 350,000 trades a day (~4/s) on that date.
 An error makes the notebook raise, which skips the Gold activities of the pipeline and so holds Gold's watermark; it also sends one event per failed error check to `es_dq_alerts`. A warn is only recorded. The volume, age and contiguity checks are warns because a backfill or a collector pause legitimately breaks their baselines and none of them makes a row wrong (ADR 0007). The gate never writes Gold or moves a watermark. After the cause is fixed (for example a duplicate removed from Silver) the next run reads the same range again; Gold's own dedupe makes the earlier insert in the Change Data Feed harmless.
 
 `gold.dim_pair` must hold every tracked pair before the first Gold run: a new tracked pair blocks Gold until `pl_ingest_bronze_asset_pairs` (or `nb_build_dim_pair`) has added it. The gate does not run on an empty batch (no new Silver commit), so a stalled Silver is not visible in `ops.dq_result`; the "no trade for 10 minutes" alert watches the events `es_trades` receives from the collector, which is the same stream Bronze is fed from.
+
+## Reconcile
+
+`nb_reconcile_hot_gold` is the last activity of `pl_process_gold`. For every tracked pair and UTC day it compares what the hot path counted (`eh_trades.hot_daily`: every event `trades_raw` received, duplicates included, with its own 30-day retention because `trades_raw` keeps one day) with `gold.fact_trade`, and writes one row per (`trade_date`, `symbol`) to `ops.reconcile_daily` with a `MERGE`, so a rerun replaces the row. It reads yesterday and today by default (`from_date` parameter, pipeline parameter `reconcile_from_date`, for an older day, for example after a backfill). A day the hot path has no total for gets no row. It changes no Gold number.
+
+Let R be the Bronze rows whose `_ingest_path` is not `backfill` (what was sent live, by the collector or a test sender such as `nb_test_whale_alert`, so what the hot path got too), U their distinct (`symbol`, `trade_id`) keys and G the keys in `fact_trade`. Every measure comes as `_trades` and `_notional`:
+
+| Column | Meaning |
+|---|---|
+| `hot`, `gold` | totals of the two paths |
+| `gap` | `hot` − `gold` (the reconcile gap; positive: the hot path counted more) |
+| `duplicates` | R − U: events sent more than once (snapshot after a reconnect, overlapping runs), removed by the Silver dedupe |
+| `late` | keys of U not in G: live trades Gold does not have yet (arrived after the last Gold load, held by the quality gate, or rejected by Silver: quarantined, or a test event) |
+| `backfill` | keys of G not in U: trades the live stream never delivered, added by `nb_backfill_trades` |
+| `unexplained` | `hot` − R: the hot path and Bronze got a different number of events |
+
+`gap` = `duplicates` + `late` − `backfill` + `unexplained`, in count and in notional. A trade the collector missed (a **Gap** of `trade_id`s, ADR 0007) and nothing backfilled is in neither path, so it is not in the reconcile gap; backfilling it is what makes Gold exceed the hot path, and that shows as `backfill`. Today's row is a day in progress: both paths move, so `late` is normally above 0 until the next Gold load.
 
 ## Gold
 

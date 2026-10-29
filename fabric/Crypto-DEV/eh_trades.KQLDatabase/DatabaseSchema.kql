@@ -39,3 +39,13 @@
     trades_raw
     | summarize volume = sum(qty), notional = sum(qty * price) by symbol, bin_start = bin(timestamp, 5m)
 }
+
+// Daily totals per pair for nb_reconcile_hot_gold (issue #14): every event trades_raw received, duplicates
+// included, like the live numbers. trades_raw keeps one day, so the reconcile of an older day reads this view,
+// whose retention is its own (30 days). `async` + backfill = true starts it from what trades_raw holds now.
+.create async ifnotexists materialized-view with (backfill = true) hot_daily on table trades_raw {
+    trades_raw
+    | summarize events = count(), notional = sum(qty * price) by symbol, trade_date = bin(timestamp, 1d)
+}
+
+.alter-merge materialized-view hot_daily policy retention softdelete = 30d recoverability = disabled

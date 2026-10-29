@@ -212,6 +212,59 @@
             }
           }
         }
+      },
+      {
+        "name": "Run nb_reconcile_hot_gold",
+        "type": "TridentNotebook",
+        "dependsOn": [
+          {
+            "activity": "Run nb_refresh_agg_pair_daily",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "notebookId": "c2762e78-e736-4f3e-a575-6d082628e08d",
+          "workspaceId": "c8d6538e-e60c-467b-8440-dec5dae4d897",
+          "parameters": {
+            "bronze_table": {
+              "value": {
+                "value": "@pipeline().parameters.bronze_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "fact_table": {
+              "value": {
+                "value": "@pipeline().parameters.fact_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "reconcile_table": {
+              "value": {
+                "value": "@pipeline().parameters.reconcile_table",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "from_date": {
+              "value": {
+                "value": "@pipeline().parameters.reconcile_from_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        }
       }
     ],
     "parameters": {
@@ -258,6 +311,14 @@
       "fail_gold_after_write": {
         "type": "bool",
         "defaultValue": false
+      },
+      "reconcile_table": {
+        "type": "string",
+        "defaultValue": "ops.reconcile_daily"
+      },
+      "reconcile_from_date": {
+        "type": "string",
+        "defaultValue": ""
       }
     }
   }

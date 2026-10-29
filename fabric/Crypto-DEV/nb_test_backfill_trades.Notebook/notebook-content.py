@@ -67,7 +67,7 @@ import requests
 RESULT_PATH = "Files/checks/nb_test_backfill_trades.json"
 T = {name: f"test.bf_{name}" for name in
      ["bronze_trades", "silver_trades", "quarantine_trades", "etl_watermark", "fact_trade", "dim_pair", "dim_date", "agg_pair_daily",
-      "dq_result"]}
+      "dq_result", "reconcile_daily"]}
 SMOKE_BRONZE = ["test.bf_smoke_bronze_open", "test.bf_smoke_bronze_ended"]
 BRONZE_DDL = ("symbol STRING, side STRING, price DOUBLE, qty DOUBLE, ord_type STRING, "
               "trade_id BIGINT, timestamp STRING, _ingest_path STRING, _load_ts STRING")
@@ -215,7 +215,7 @@ def process_gold():
         "bronze_table": T["bronze_trades"], "silver_table": T["silver_trades"], "quarantine_table": T["quarantine_trades"],
         "fact_table": T["fact_trade"], "dim_pair_table": T["dim_pair"], "dim_date_table": T["dim_date"],
         "watermark_table": T["etl_watermark"], "mlv_table": T["agg_pair_daily"], "fail_gold_after_write": False,
-        "dq_result_table": T["dq_result"], "send_dq_alerts": False})  # alerts off: a failing gate would mail the operator
+        "dq_result_table": T["dq_result"], "reconcile_table": T["reconcile_daily"], "send_dq_alerts": False})  # alerts off: a failing gate would mail the operator
 
 
 def run_backfill_fixture():
