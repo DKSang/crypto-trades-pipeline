@@ -1,6 +1,10 @@
 # Crypto Trades Pipeline
 
-Microsoft Fabric • Eventstream • Eventhouse (KQL) • Delta Lake • PySpark • Great Expectations • Power BI
+[![Microsoft Fabric](https://img.shields.io/badge/Microsoft_Fabric-DEV-117865)](#architecture)
+[![PySpark](https://img.shields.io/badge/PySpark-incremental_ETL-E25A1C)](#pipelines)
+[![Delta Lake](https://img.shields.io/badge/Delta_Lake-Bronze_%7C_Silver_%7C_Gold-003366)](#data-model)
+[![Great Expectations](https://img.shields.io/badge/Great_Expectations-quality_gates-FF6310)](#data-quality-and-testing)
+[![Power BI](https://img.shields.io/badge/Power_BI-Direct_Lake-F2C811)](#report)
 
 An end-to-end data pipeline that turns Kraken spot trades into live whale-trade detection and hourly trading analytics for 20 USD pairs. A hot path feeds a Real-Time dashboard; a cold path builds a quality-gated Gold star schema for pair rankings, taker pressure, and daily OHLC and VWAP.
 
