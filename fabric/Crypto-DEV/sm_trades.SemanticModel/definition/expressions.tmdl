@@ -1,0 +1,5 @@
+expression 'DirectLake - sm_trades' =
+		let
+		    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/c8d6538e-e60c-467b-8440-dec5dae4d897/039e4fc7-5892-4238-9c2f-a260cb73fc9f", [HierarchicalNavigation=true])
+		in
+		    Source

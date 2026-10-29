@@ -1,0 +1,69 @@
+/// One trade on one pair (gold.fact_trade), seen from the taker's side. Key (Pair Symbol, trade_id); trade_id is not loaded.
+table Trade
+
+	/// Newest trade in Gold, in UTC, whatever pair or dates are selected. Gold is rebuilt hourly, so this is how fresh the report is. Gold keeps no load time, so a quiet market looks the same as a late load.
+	measure 'Data as of (UTC)' = CALCULATE(MAX('Trade'[Trade Timestamp]), REMOVEFILTERS())
+		formatString: yyyy-mm-dd hh:nn:ss
+		displayFolder: Freshness
+
+	/// A whale trade is a single trade at or above this notional. Constant copied from vl_crypto.whale_threshold_usd: nothing in this model reads the Variable library (whether it could was not checked), so change both together (nb_test_sm_trades checks they match).
+	measure 'Whale Threshold (USD)' = 100000
+		formatString: $#,##0
+		displayFolder: Whale
+
+	/// Notional of the whale trades in the current filter. 0 when there are trades but no whale trade; blank when there are no trades.
+	measure 'Whale Notional' = ```
+			VAR _total = SUM('Trade'[Trade Notional])
+			VAR _threshold = [Whale Threshold (USD)]
+			RETURN
+			    IF(
+			        NOT ISBLANK(_total),
+			        COALESCE(CALCULATE(SUM('Trade'[Trade Notional]), 'Trade'[Trade Notional] >= _threshold), 0)
+			    )
+			```
+		formatString: $#,##0
+		displayFolder: Whale
+
+	/// Share of the notional that came from whale trades, over any filter: whale notional / total notional of the same trades. A ratio, so it is never summed or averaged over days or pairs.
+	measure 'Whale Share of Notional' = DIVIDE([Whale Notional], SUM('Trade'[Trade Notional]))
+		formatString: 0.00%
+		displayFolder: Whale
+
+	column 'Pair Symbol'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: symbol
+
+	column 'Trade Timestamp'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd hh:nn:ss
+		summarizeBy: none
+		sourceColumn: trade_ts
+
+	column 'Trade Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: trade_date
+
+	/// Whether the order that crossed the book bought or sold (Kraken's side is always the taker's).
+	column 'Taker Side'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: side
+
+	column 'Trade Notional'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: notional
+
+	partition Trade = entity
+		mode: directLake
+		source
+			entityName: fact_trade
+			schemaName: gold
+			expressionSource: 'DirectLake - sm_trades'

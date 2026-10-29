@@ -1,0 +1,128 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "b3_line",
+  "position": {
+    "x": 340,
+    "y": 70,
+    "z": 1000,
+    "height": 300,
+    "width": 920,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Date"
+                    }
+                  },
+                  "Property": "Date"
+                }
+              },
+              "queryRef": "Date.Date"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Open"
+                }
+              },
+              "queryRef": "Pair Daily.Open"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "High"
+                }
+              },
+              "queryRef": "Pair Daily.High"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Low"
+                }
+              },
+              "queryRef": "Pair Daily.Low"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Close"
+                }
+              },
+              "queryRef": "Pair Daily.Close"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "VWAP"
+                }
+              },
+              "queryRef": "Pair Daily.VWAP"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Open, high, low, close and VWAP per day (USD)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

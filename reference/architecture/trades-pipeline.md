@@ -13,7 +13,7 @@ Scope agreed 2026-10-28 (source switched from Polymarket to Kraken spot the same
 | Pair metadata: Copy (REST) lands `AssetPairs` in `Files/bronze/asset_pairs/`, then `nb_build_dim_pair` merges tracked pairs into `gold.dim_pair` | `pl_ingest_bronze_asset_pairs` | daily 00:15 UTC |
 | Silver (dedupe on `symbol` + `trade_id`, quarantine, gap check) → `nb_load_silver`; quality gate on the Silver batch → `nb_check_silver_batch` (GX, `env_crypto`); Gold (`fact_trade`, `dim_pair`, `dim_date`) → `nb_load_gold`; MLV create and refresh → `nb_refresh_agg_pair_daily`. Hot vs Gold reconcile comes later | `pl_process_gold` | hourly (Cron, every 60 min, UTC) |
 | Alerts: no trade for 10 minutes (`es_trades` → count per minute → Activator), error-level DQ check failed (`nb_check_silver_batch` → `es_dq_alerts` → Activator) | `act_pipeline_alerts` | live |
-| Serve | `sm_trades` (Direct Lake), `rpt_trades_overview` | |
+| Serve: Direct Lake model on the four Gold tables (relationships on the foreign keys of `gold-model.md`; ratios and roll-ups are measures), and a three-page report, one page per batch question B1-B3, each showing when the data was last refreshed (newest trade in Gold). Tested by `nb_test_sm_trades` | `sm_trades` (Direct Lake), `rpt_trades_overview` | none of its own: Direct Lake frames a table when its Delta data changes (DOCUMENTED, [Learn](https://learn.microsoft.com/fabric/fundamentals/direct-lake-how-it-works#automatic-updates); the setting on `sm_trades` was not read) |
 
 ## Testing
 

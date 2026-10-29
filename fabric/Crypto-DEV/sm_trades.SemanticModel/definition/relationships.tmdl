@@ -1,0 +1,15 @@
+relationship Trade_Pair
+	fromColumn: Trade.'Pair Symbol'
+	toColumn: Pair.Pair
+
+relationship Trade_Date
+	fromColumn: Trade.'Trade Date'
+	toColumn: Date.Date
+
+relationship PairDaily_Pair
+	fromColumn: 'Pair Daily'.'Pair Symbol'
+	toColumn: Pair.Pair
+
+relationship PairDaily_Date
+	fromColumn: 'Pair Daily'.'Trade Date'
+	toColumn: Date.Date

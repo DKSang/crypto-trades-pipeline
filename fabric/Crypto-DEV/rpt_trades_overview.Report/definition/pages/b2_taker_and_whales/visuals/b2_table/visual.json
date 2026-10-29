@@ -1,0 +1,137 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "b2_table",
+  "position": {
+    "x": 340,
+    "y": 390,
+    "z": 1000,
+    "height": 310,
+    "width": 920,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair"
+                    }
+                  },
+                  "Property": "Pair"
+                }
+              },
+              "queryRef": "Pair.Pair"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Notional"
+                }
+              },
+              "queryRef": "Pair Daily.Notional"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Taker Buy Notional"
+                }
+              },
+              "queryRef": "Pair Daily.Taker Buy Notional"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Taker Sell Notional"
+                }
+              },
+              "queryRef": "Pair Daily.Taker Sell Notional"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Pair Daily"
+                    }
+                  },
+                  "Property": "Taker Buy Share"
+                }
+              },
+              "queryRef": "Pair Daily.Taker Buy Share"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Trade"
+                    }
+                  },
+                  "Property": "Whale Notional"
+                }
+              },
+              "queryRef": "Trade.Whale Notional"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Trade"
+                    }
+                  },
+                  "Property": "Whale Share of Notional"
+                }
+              },
+              "queryRef": "Trade.Whale Share of Notional"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'By pair over the chosen dates'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

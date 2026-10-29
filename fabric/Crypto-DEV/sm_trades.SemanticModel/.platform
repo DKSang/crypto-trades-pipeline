@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "sm_trades"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "5f1c0b6e-3a7d-4e52-9c1b-8d2f6a4e7b10"
+  }
+}

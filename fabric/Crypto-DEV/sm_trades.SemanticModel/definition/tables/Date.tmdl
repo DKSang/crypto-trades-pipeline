@@ -1,0 +1,66 @@
+/// One UTC calendar day (gold.dim_date), including days without trades.
+table Date
+	dataCategory: Time
+
+	/// UTC calendar day. Key of the date table.
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: date
+
+	/// Calendar year of the UTC day.
+	column Year
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: year
+
+	/// Calendar quarter, 1 to 4.
+	column Quarter
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: quarter
+
+	/// Calendar month number, 1 to 12.
+	column Month
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: month
+
+	/// Day of the month.
+	column Day
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: day
+
+	/// ISO day of week, Monday = 1.
+	column 'Day of Week'
+		dataType: int64
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: day_of_week
+
+	/// Name of the weekday; sorts by ISO day of week.
+	column 'Day Name'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: day_name
+		sortByColumn: 'Day of Week'
+
+	/// Saturday or Sunday (UTC).
+	column 'Is Weekend'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+	partition Date = entity
+		mode: directLake
+		source
+			entityName: dim_date
+			schemaName: gold
+			expressionSource: 'DirectLake - sm_trades'

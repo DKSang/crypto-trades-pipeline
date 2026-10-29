@@ -1,0 +1,9 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  "pageOrder": [
+    "b1_pairs_by_notional",
+    "b2_taker_and_whales",
+    "b3_daily_ohlc_vwap"
+  ],
+  "activePageName": "b1_pairs_by_notional"
+}

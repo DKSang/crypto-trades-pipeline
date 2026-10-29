@@ -1,0 +1,39 @@
+/// One pair ever tracked (gold.dim_pair). A pair that is no longer tracked keeps its row and its history; filter on Is Tracked only when you want to.
+table Pair
+
+	/// Pair name in Kraken WebSocket v2 form, e.g. BTC/USD.
+	column Pair
+		dataType: string
+		summarizeBy: none
+		sourceColumn: symbol
+
+	/// The coin the pair buys and sells, e.g. BTC in BTC/USD; its quantity is the trade quantity.
+	column 'Base Asset'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: base
+
+	/// The asset the pair is priced in; always USD for tracked pairs.
+	column 'Quote Asset'
+		dataType: string
+		summarizeBy: none
+		sourceColumn: quote
+
+	/// Kraken's trading status of the pair when the pair list was last read (online, cancel_only, post_only...). Empty for a pair seen only in trades.
+	column Status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+	/// On the tracked list in vl_crypto now. Off for a pair that was tracked before.
+	column 'Is Tracked'
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: is_tracked
+
+	partition Pair = entity
+		mode: directLake
+		source
+			entityName: dim_pair
+			schemaName: gold
+			expressionSource: 'DirectLake - sm_trades'

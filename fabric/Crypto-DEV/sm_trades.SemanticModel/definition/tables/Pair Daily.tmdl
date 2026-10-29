@@ -1,0 +1,131 @@
+/// One pair on one UTC day (gold.agg_pair_daily, a Materialized Lake View). Additive columns are summed by measures; open, high, low and close are rolled up by rule, never summed or averaged.
+table 'Pair Daily'
+
+	/// Cash value of the trades in USD (quantity x price, before fees). Adds up over days and pairs.
+	measure Notional = SUM('Pair Daily'[Daily Notional])
+		formatString: $#,##0
+		displayFolder: Totals
+
+	/// Traded quantity in the pair's base asset. Adds up over days of one pair; do not add it across pairs, the units differ.
+	measure Volume = SUM('Pair Daily'[Daily Volume])
+		formatString: #,##0.0000
+		displayFolder: Totals
+
+	/// Number of trades. Adds up over days and pairs.
+	measure '# Trades' = SUM('Pair Daily'[Daily Trade Count])
+		formatString: #,##0
+		displayFolder: Totals
+
+	/// Notional of trades whose taker bought, i.e. buyers crossed the book.
+	measure 'Taker Buy Notional' = SUM('Pair Daily'[Daily Taker Buy Notional])
+		formatString: $#,##0
+		displayFolder: Taker pressure
+
+	/// Notional of trades whose taker sold: total notional minus taker buy notional.
+	measure 'Taker Sell Notional' = [Notional] - [Taker Buy Notional]
+		formatString: $#,##0
+		displayFolder: Taker pressure
+
+	/// Share of notional pressed by taker buyers. Above 50% buyers press the pair, below 50% sellers do. A ratio, so it is never summed or averaged over days or pairs.
+	measure 'Taker Buy Share' = DIVIDE([Taker Buy Notional], [Notional])
+		formatString: 0.00%
+		displayFolder: Taker pressure
+
+	/// Volume-weighted average price: total notional / total volume over the filter, not the average of daily VWAPs. Blank unless exactly one pair is selected, because the base units differ across pairs.
+	measure VWAP = IF(HASONEVALUE('Pair'[Pair]), DIVIDE([Notional], [Volume]))
+		formatString: #,##0.0000
+		displayFolder: Price
+
+	/// Open of the first day with trades in the filter. Blank unless exactly one pair is selected.
+	measure Open = ```
+			VAR _firstDay = MIN('Pair Daily'[Trade Date])
+			RETURN IF(HASONEVALUE('Pair'[Pair]), CALCULATE(MAX('Pair Daily'[Daily Open]), 'Pair Daily'[Trade Date] = _firstDay))
+			```
+		formatString: #,##0.0000
+		displayFolder: Price
+
+	/// Highest price of any trade in the filter. Blank unless exactly one pair is selected.
+	measure High = IF(HASONEVALUE('Pair'[Pair]), MAX('Pair Daily'[Daily High]))
+		formatString: #,##0.0000
+		displayFolder: Price
+
+	/// Lowest price of any trade in the filter. Blank unless exactly one pair is selected.
+	measure Low = IF(HASONEVALUE('Pair'[Pair]), MIN('Pair Daily'[Daily Low]))
+		formatString: #,##0.0000
+		displayFolder: Price
+
+	/// Close of the last day with trades in the filter. Blank unless exactly one pair is selected.
+	measure Close = ```
+			VAR _lastDay = MAX('Pair Daily'[Trade Date])
+			RETURN IF(HASONEVALUE('Pair'[Pair]), CALCULATE(MAX('Pair Daily'[Daily Close]), 'Pair Daily'[Trade Date] = _lastDay))
+			```
+		formatString: #,##0.0000
+		displayFolder: Price
+
+	column 'Pair Symbol'
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: symbol
+
+	column 'Trade Date'
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		summarizeBy: none
+		sourceColumn: trade_date
+
+	column 'Daily Open'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: open
+
+	column 'Daily High'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: high
+
+	column 'Daily Low'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: low
+
+	column 'Daily Close'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: close
+
+	column 'Daily Volume'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: volume
+
+	column 'Daily Notional'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: notional
+
+	column 'Daily Trade Count'
+		dataType: int64
+		isHidden
+		summarizeBy: none
+		sourceColumn: trade_count
+
+	column 'Daily Taker Buy Notional'
+		dataType: double
+		isHidden
+		summarizeBy: none
+		sourceColumn: taker_buy_notional
+
+	partition 'Pair Daily' = entity
+		mode: directLake
+		source
+			entityName: agg_pair_daily
+			schemaName: gold
+			expressionSource: 'DirectLake - sm_trades'
