@@ -66,7 +66,8 @@ import requests
 
 RESULT_PATH = "Files/checks/nb_test_backfill_trades.json"
 T = {name: f"test.bf_{name}" for name in
-     ["bronze_trades", "silver_trades", "quarantine_trades", "etl_watermark", "fact_trade", "dim_pair", "dim_date", "agg_pair_daily"]}
+     ["bronze_trades", "silver_trades", "quarantine_trades", "etl_watermark", "fact_trade", "dim_pair", "dim_date", "agg_pair_daily",
+      "dq_result"]}
 SMOKE_BRONZE = ["test.bf_smoke_bronze_open", "test.bf_smoke_bronze_ended"]
 BRONZE_DDL = ("symbol STRING, side STRING, price DOUBLE, qty DOUBLE, ord_type STRING, "
               "trade_id BIGINT, timestamp STRING, _ingest_path STRING, _load_ts STRING")
@@ -168,6 +169,9 @@ def reset():
         if name != "agg_pair_daily":
             spark.sql(f"DROP TABLE IF EXISTS {table}")
     create_bronze(T["bronze_trades"])
+    # The quality gate of pl_process_gold needs every pair of the batch in dim_pair; in DEV nb_build_dim_pair has put them there.
+    spark.sql(f"CREATE TABLE {T['dim_pair']} (symbol STRING, base STRING, quote STRING, status STRING, is_tracked BOOLEAN) USING DELTA")
+    spark.sql(f"INSERT INTO {T['dim_pair']} VALUES ('BTC/USD', 'BTC', 'USD', 'online', true)")
 
 
 def create_bronze(table):
@@ -210,7 +214,8 @@ def process_gold():
     return run_pipeline("pl_process_gold", {
         "bronze_table": T["bronze_trades"], "silver_table": T["silver_trades"], "quarantine_table": T["quarantine_trades"],
         "fact_table": T["fact_trade"], "dim_pair_table": T["dim_pair"], "dim_date_table": T["dim_date"],
-        "watermark_table": T["etl_watermark"], "mlv_table": T["agg_pair_daily"], "fail_gold_after_write": False})
+        "watermark_table": T["etl_watermark"], "mlv_table": T["agg_pair_daily"], "fail_gold_after_write": False,
+        "dq_result_table": T["dq_result"], "send_dq_alerts": False})  # alerts off: a failing gate would mail the operator
 
 
 def run_backfill_fixture():

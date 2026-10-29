@@ -144,15 +144,17 @@ def backfill(fetch, symbol, start_ns, end_epoch, bronze_table):
             spark.createDataFrame(buffer, BRONZE_SCHEMA).write.format("delta").mode("append").saveAsTable(bronze_table)
             buffer.clear()
 
-    for page in iter_pages(fetch, start_ns, end_epoch):
-        buffer.extend(to_bronze_row(symbol, r, load_ts) for r in page)
-        result["pages"] += 1
-        result["trades"] += len(page)
-        result["first_trade_id"] = result["first_trade_id"] or page[0][6]
-        result["last_trade_id"] = page[-1][6]
-        if result["pages"] % FLUSH_PAGES == 0:
-            flush()
-    flush()
+    try:
+        for page in iter_pages(fetch, start_ns, end_epoch):
+            buffer.extend(to_bronze_row(symbol, r, load_ts) for r in page)
+            result["pages"] += 1
+            result["trades"] += len(page)
+            result["first_trade_id"] = result["first_trade_id"] or page[0][6]
+            result["last_trade_id"] = page[-1][6]
+            if result["pages"] % FLUSH_PAGES == 0:
+                flush()
+    finally:
+        flush()  # a failed call after its retries still keeps the pages read so far
     return result
 
 # METADATA ********************
