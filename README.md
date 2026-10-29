@@ -1,6 +1,90 @@
 # crypto-trades-pipeline
 
-Kraken spot trades for 20 USD pairs on Microsoft Fabric: Eventstream hot path and a Gold star. Design: `reference/architecture/trades-pipeline.md`.
+An end-to-end data pipeline on **Microsoft Fabric** for Kraken spot trades: a live **hot path** that raises an alert and feeds a real-time dashboard within seconds, and a **cold path** that builds a tested, quality-gated **Gold star schema** every hour.
+
+`Eventstream` · `Eventhouse (KQL)` · `Lakehouse (Delta)` · `PySpark notebooks` · `Materialized Lake Views` · `Data pipelines` · `Great Expectations` · `Activator` · `Direct Lake + Power BI`
+
+Everything under `fabric/Crypto-DEV/` is the exported definition of the items in the Fabric workspace, so the repo is the source of truth for what runs. Built issue by issue (16 closed issues); each choice that is hard to reverse is a short decision record in [`reference/decisions/`](reference/decisions/).
+
+## The problem
+
+Trades on 20 USD pairs (about 350,000 a day) arrive as a stream. Two kinds of question need two kinds of answer:
+
+| | Question | Where it is answered | Freshness |
+|---|---|---|---|
+| Hot | A whale trade (at least 100,000 USD) just happened. What is the 5-minute volume per pair? | Eventhouse, Real-Time dashboard, Activator | seconds |
+| Gold | Which pairs draw money (B1)? Is taker buying or selling dominating, and how much is whales (B2)? Daily OHLC and VWAP per pair (B3)? | Lakehouse Gold star, Direct Lake model, report | hourly |
+
+Official numbers come only from Gold; the hot path detects events and never defines a KPI ([ADR 0004](reference/decisions/0004-hot-path-detects-events-only.md)). A daily **reconcile** compares the two paths per pair and day and explains every gap.
+
+## Architecture
+
+![Architecture of crypto-trades-pipeline on Microsoft Fabric: Kraken sources, hot path in Eventhouse, cold path in a Lakehouse, serving through Activator, a Real-Time dashboard and a Direct Lake report](docs/images/architecture.png)
+
+<details>
+<summary>The same flow as a Mermaid diagram</summary>
+
+```mermaid
+flowchart LR
+    K[Kraken<br/>WebSocket v2 + REST] --> C[nb_collect_trades<br/>Python notebook]
+    C --> ES[es_trades<br/>Eventstream]
+
+    ES -->|hot path| EH[(eh_trades<br/>Eventhouse)]
+    EH --> W[whale_trades<br/>update policy]
+    EH --> V[volume_5m / hot_daily<br/>materialized views]
+    W --> A1[act_whale_trades<br/>Activator]
+    V --> RTD[rtd_trades_live<br/>Real-Time dashboard]
+
+    ES -->|cold path| B[(bronze.trades)]
+    BF[nb_backfill_trades<br/>REST backfill] --> B
+    B -->|CDF by commit version| S[(silver.trades)]
+    S --> Q{Quality gate<br/>Great Expectations}
+    Q -->|pass| G[(gold: fact_trade<br/>dim_pair, dim_date)]
+    Q -.->|error check failed| DQ[es_dq_alerts] --> A2[act_pipeline_alerts]
+    G --> M[agg_pair_daily<br/>Materialized Lake View]
+    G --> SM[sm_trades<br/>Direct Lake model] --> R[rpt_trades_overview<br/>B1-B3]
+    M --> SM
+    G --> RC[nb_reconcile_hot_gold]
+    EH -. hot_daily .-> RC
+    RC --> OPS[(ops.reconcile_daily)]
+```
+
+</details>
+
+The cold path is one hourly data pipeline, `pl_process_gold`: Silver, quality gate, Gold, Materialized Lake View refresh, reconcile. Step by step with schedules: [`reference/architecture/trades-pipeline.md`](reference/architecture/trades-pipeline.md). Grain, keys and the double-counting rules of every Gold table: [`reference/architecture/gold-model.md`](reference/architecture/gold-model.md).
+
+## Screenshots
+
+| | |
+|---|---|
+| **B1** Which pairs draw the most | **B2** Taker pressure and whales |
+| ![Report page B1](docs/images/rpt_b1.png) | ![Report page B2](docs/images/rpt_b2.png) |
+| **B3** Daily OHLC and VWAP | **Live** Real-Time dashboard |
+| ![Report page B3](docs/images/rpt_b3.png) | ![Real-Time dashboard rtd_trades_live](docs/images/rtd.png) |
+
+`pl_process_gold`, one hourly run: five notebook activities, all succeeded.
+
+![pl_process_gold run](docs/images/pipeline.png)
+
+## Design decisions worth reading
+
+| Decision | Why | Record |
+|---|---|---|
+| Incremental loads read Delta Change Data Feed by **commit version**, kept in a watermark table, not by timestamp | A rerun after a failure re-reads the same range; insert-only `MERGE`s make it harmless. Late data cannot slip behind a timestamp cursor | [ADR 0002](reference/decisions/0002-commit-version-watermark.md) |
+| PySpark notebooks for Silver and Gold, Materialized Lake Views for the aggregate, no dbt | Dedupe, `MERGE` and quarantine written by hand to show the skills; the MLV refreshes incrementally | [ADR 0003](reference/decisions/0003-pyspark-notebooks-and-mlv-no-dbt.md) |
+| Hot path only detects events; Gold owns every official number | Two sources of truth drift apart; the reconcile proves they have not | [ADR 0004](reference/decisions/0004-hot-path-detects-events-only.md) |
+| Key is (`symbol`, `trade_id`) from Kraken, both for WebSocket and REST backfill | One trade has one key whichever path delivered it, so a backfill cannot double Gold | [ADR 0006](reference/decisions/0006-kraken-spot-trades-keyed-by-trade-id.md) |
+| A Python-notebook collector holds the WebSocket; gaps between runs are accepted | Eventstream has no WebSocket source; the gap is measured by the quality gate rather than hidden | [ADR 0007](reference/decisions/0007-collector-holds-websocket-gaps-accepted.md) |
+| Spark used although one node would do at this volume | Stated aim is Spark skills; the cost is measured and the DuckDB alternative is argued with public benchmarks | [`docs/bronze-benchmark.md`](docs/bronze-benchmark.md) |
+
+## Data quality and testing
+
+- **Silver** drops duplicates on (`symbol`, `trade_id`) and sends rows that break a rule to `ops.quarantine_trades` with one rule ID (`null_key`, `non_positive_qty`, `invalid_side`, ...).
+- **Quality gate** (`nb_check_silver_batch`, Great Expectations on the Silver batch): schema, key uniqueness and reference integrity are *error* checks that stop Gold and alert; volume, freshness and `trade_id` contiguity are *warn* checks. Every result is stored in `ops.dq_result`.
+- **Alerts**: no trade for 10 minutes, and an error-level check failed, both through Activator.
+- **Spark logic is tested inside Fabric** on scratch tables in schema `test` (the test, check and benchmark notebooks live in `fabric/Crypto-DEV/` and were taken out of the workspace afterwards so its lineage view stays readable; `fab import` restores them): the 28 notebooks in the repo include `nb_test_*` suites for Silver (7 cases), Gold (8), the gate (9), the reconcile (9), the semantic model's measures (10), and `nb_test_process_gold`, which runs the real `pl_process_gold` through the job API (reruns, overlapping batches, duplicates, forced failure and recovery).
+- **Pure-Python logic** is unit-tested locally: `python -m unittest discover tests` (24 tests).
+- **Spikes before building** proved the risky assumptions first (WebSocket and REST agree, a notebook can hold the socket, CDF on an Eventstream-written table, Great Expectations on Spark). One partly failed and the design changed; see the end of [`trades-pipeline.md`](reference/architecture/trades-pipeline.md).
 
 ## Numbers
 
@@ -24,3 +108,29 @@ Taken on 2026-10-29 in `Crypto-DEV`. **Read** = counted from the real tables, **
 ## What it shows about Spark
 
 At this volume one machine is enough, and the pipeline's time is mostly the start of five Spark sessions: [`docs/bronze-benchmark.md`](docs/bronze-benchmark.md) has the layout, small-file and join measurements, published DuckDB-versus-Spark benchmarks, and why Spark is used anyway.
+
+## Known limits
+
+Stated plainly, because the numbers above are only as good as these caveats.
+
+- **Small live sample.** One 60-minute collector session of real data; large volumes in the benchmarks are synthetic rows in the Bronze shape.
+- **Whale email is not delivered.** Activator only mails addresses inside the tenant, and the owner's are outside it. The alert fires and Activator's error mail is the proof ([`reference/lessons.md`](reference/lessons.md)).
+- **Gaps between collector runs are accepted** (ADR 0007): trades the collector misses are not in the hot path, and only a backfill adds them to Gold.
+- **DEV only.** One workspace, no deployment stages, Fabric Git integration out of scope for now.
+- **Warn-level `trade_id_contiguity` failed twice** in the measured window and was not investigated.
+
+## Repository
+
+| Path | Contents |
+|---|---|
+| `fabric/Crypto-DEV/` | Exported item definitions: 28 notebooks, 3 data pipelines, 2 Eventstreams, Eventhouse KQL schema, Real-Time dashboard, 2 Activators, Environment, Variable Library, semantic model (TMDL), report (PBIR) |
+| `reference/` | Architecture, decisions (ADRs), glossary, naming conventions, lessons learned (every gotcha is labelled DOCUMENTED or OBSERVED with a date) |
+| `docs/` | Bronze benchmark and the hot-path-vs-Gold reconcile write-ups |
+| `scripts/` | `fabric-login.sh` (service principal sign-in), `kql-run.py` (apply KQL to the Eventhouse) |
+| `tests/` | Local unit tests for pure-Python logic |
+| `data/` | Small sample files for development |
+| `AGENTS.md`, `CLAUDE.md` | Instructions for AI coding assistants used on this repo |
+
+## Reproducing it
+
+You need a Fabric capacity and a workspace named `Crypto-DEV`, the [Fabric CLI](https://aka.ms/fabric-cli) signed in (`sh scripts/fabric-login.sh` reads credentials from a local `.env`, not committed), and `python -m unittest discover tests` for the local tests. Items are published with `fab import "Crypto-DEV.Workspace/<item>.<Type>" -i fabric/Crypto-DEV/<item>.<Type> -f` (notebooks need `--format .py`). Order, IDs to fill in and gotchas: [`reference/fabric-cli.md`](reference/fabric-cli.md) and [`reference/environment.md`](reference/environment.md). Workspace and lakehouse IDs inside the definitions belong to the original workspace and must be replaced for another one. The recipient in `act_pipeline_alerts` is a placeholder.
