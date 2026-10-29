@@ -1,3 +1,8 @@
 .env
 *.local.json
 __pycache__/
+AGENTS.md
+CLAUDE.md
+/.mcp.json
+/.claude/
+/docs/agents/
